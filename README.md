@@ -20,3 +20,5 @@ The Helm chart includes templates for the following objects:
   - **Ingresses:** Exposes ports to the outside world; see [example]().
 
 Example node configurations can be found in examples folder.
+
+[Repo index](./index.yaml)
