@@ -21,6 +21,45 @@ entries:
           description: NodePool is the Schema for the NodePools API.
     apiVersion: v2
     appVersion: 0.37.0
+    created: "2024-07-28T07:09:42.609057637Z"
+    description: A Helm chart for Karpenter, an open-source node provisioning project
+      built for Kubernetes.
+    digest: 9234880924d6b0a5a118d2f472826839ada64fd67da7f98066b4bec103f6eb7b
+    home: https://karpenter.sh/
+    icon: https://repository-images.githubusercontent.com/278480393/dab059c8-caa1-4b55-aaa7-3d30e47a5616
+    keywords:
+    - cluster
+    - node
+    - scheduler
+    - autoscaling
+    - lifecycle
+    name: karpenter
+    sources:
+    - https://github.com/aws/karpenter-provider-aws/
+    type: application
+    urls:
+    - https://github.com/AstarNetwork/helm-charts/releases/download/karpenter-0.37.2/karpenter-0.37.2.tgz
+    version: 0.37.2
+  - annotations:
+      artifacthub.io/alternativeName: karpenter-provider-aws
+      artifacthub.io/crds: |
+        - kind: EC2NodeClass
+          version: v1beta1
+          name: ec2nodeclasses.karpenter.k8s.aws
+          displayName: EC2NodeClass
+          description: EC2NodeClass is the Schema for the EC2NodeClass API.
+        - kind: NodeClaim
+          version: v1beta1
+          name: nodeclaims.karpenter.sh
+          displayName: NodeClaim
+          description: NodeClaim is the Schema for the NodeClaims API.
+        - kind: NodePool
+          version: v1beta1
+          name: nodepools.karpenter.sh
+          displayName: NodePool
+          description: NodePool is the Schema for the NodePools API.
+    apiVersion: v2
+    appVersion: 0.37.0
     created: "2024-07-27T23:51:45.080303718Z"
     description: A Helm chart for Karpenter, an open-source node provisioning project
       built for Kubernetes.
@@ -133,4 +172,4 @@ entries:
     urls:
     - https://github.com/AstarNetwork/helm-charts/releases/download/universal-helm-0.6.11/universal-helm-0.6.11.tgz
     version: 0.6.11
-generated: "2024-07-27T23:51:45.080319296Z"
+generated: "2024-07-28T07:09:42.609080711Z"
