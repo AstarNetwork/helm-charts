@@ -9,7 +9,6 @@ metadata:
 spec:
   selector:
     statefulsetname: {{ $sts.name }}
-  publishNotReadyAddresses: true
   ports:
     #! Headless service's port doesn't matter coz you addressing pod directly
     - port: 12345
