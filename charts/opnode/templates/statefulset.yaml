@@ -1,0 +1,258 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "opnode.fullname" . }}
+  labels:
+    {{- include "opnode.labels" . | nindent 4 }}
+spec:
+  serviceName: {{ include "opnode.fullname" . }}
+  replicas: {{ default 1 .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "opnode.selectorLabels" . | nindent 6 }}
+  podManagementPolicy: {{ default "Parallel" .Values.podManagementPolicy }}
+  updateStrategy:
+    type: {{ default "RollingUpdate" .Values.updateStrategy }}
+    {{- if (eq "Recreate" (default "RollingUpdate" .Values.updateStrategy)) }}
+    rollingUpdate: null
+    {{- end }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "opnode.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "opnode.serviceAccountName" . }}
+      terminationGracePeriodSeconds: {{ default 30 .Values.terminationGracePeriodSeconds }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      initContainers:
+        - name: init-op-geth
+          image: {{.Values.opgeth.repo}}:{{.Values.opgeth.tag}}
+          imagePullPolicy: Always
+          env:
+            - name: CONFIG_FILE
+              value: /data/config.toml
+            - name: GENESIS_FILE
+              value: /data/genesis.json
+          command:
+            - 'sh'
+            - '-c'
+            - |
+              set -ex
+
+              if [ ! -s $GENESIS_FILE ]; then
+                wget {{.Values.genesisUrl}} -O $GENESIS_FILE
+                geth init --datadir=/data $GENESIS_FILE
+              else
+                echo "Genesis file already exists. Skipping initialization."
+              fi
+              mkdir -p /data/p2p/
+
+              #* Create config to setuip static peers
+              cat >$CONFIG_FILE <<EOF
+              [Node.P2P]
+              MaxPeers = 50
+              NoDiscovery = false
+              DiscoveryV5 = true
+              BootstrapNodes = []
+              BootstrapNodesV5 = []
+              StaticNodes = {{toJson .Values.opGethStaticPeers}}
+              TrustedNodes = []
+              ListenAddr = ":30303"
+              DiscAddr = ""
+              EnableMsgEvents = false
+              EOF
+
+              #* cat the config for visibility
+              cat $CONFIG_FILE
+          volumeMounts:
+            - name: opnode-data
+              mountPath: /data
+      {{- with .Values.additionalInitContainers }}
+        {{- toYaml . | nindent 6 }}
+      {{- end }}
+      containers:
+        - name: op-geth
+          image: "{{ .Values.opGeth.repository }}:{{ .Values.opGeth.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+
+          command:
+            # - sleep
+            # - infinity
+            - /usr/local/bin/geth
+            - --authrpc.addr=0.0.0.0
+            - --authrpc.jwtsecret=/data/jwt.txt
+            - --authrpc.port=8551
+            - --authrpc.vhosts=*
+            - --config=/data/config.toml
+            - --datadir=/data
+            - --gcmode=archive
+            - --http
+            - --http.addr=0.0.0.0
+            - --http.api=admin,web3,debug,eth,txpool,net,engine
+            - --http.corsdomain=*
+            - --http.port=8545
+            - --http.vhosts=*
+            - --ws
+            - --ws.addr=0.0.0.0
+            - --ws.api=web3,debug,eth,txpool,net,engine
+            - --ws.origins=*
+            - --ws.port=8546
+            - --metrics
+            - --metrics.addr=0.0.0.0
+            - --metrics.port=7300
+            - --nat=extip:$(EXTERNAL_IP)
+            - --netrestrict={{.Values.netRestrictCIDR}}
+            - --networkid={{.Values.l2NetworkId}}
+            - --nodekey=/opgeth-p2p/key
+            - --nodiscover=true
+            - --port=30303
+            - --rollup.disabletxpoolgossip=false
+            - --syncmode=full
+            - --txpool.journal=""
+            - --txpool.journalremotes=false
+            - --txpool.nolocals=true
+            - --verbosity=4
+          ports:
+            - name: metrics
+              containerPort: 7300
+            - name: rpc
+              containerPort: 8545
+            - name: ws
+              containerPort: 8546
+            - name: p2p
+              containerPort: 30303
+            - name: discovery
+              containerPort: 30304
+              protocol: UDP
+          # livenessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
+          # readinessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+
+        - name: op-node
+          image: {{.Values.opNode.repo}}:{{.Values.opNode.tag}}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: EXTERNAL_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            {{- if .Values.sequencer }}
+            - name: SEQUENCER_PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.sequencer.privateKeySecret}}
+                  key: key
+            {{- end }}
+          mountConfigMaps:
+            - name: rollup
+              mountPath: /config
+          mountSecrets:
+            - name: opnode-p2p
+              mountPath: /opnode-p2p
+  # {{$opNodeStaticPeers := "" }}
+  # {{range .Values.opNodeStaticPeers}}
+  # {{$opNodeStaticPeers = printf "%s,%s" $opNodeStaticPeers . }}
+  # {{end }}
+  # {{$opNodeStaticPeers = trimAll "," $opNodeStaticPeers }}
+          command:
+            # - sleep
+            # - infinity
+            - /usr/local/bin/op-node
+            - --l1.beacon={{.Values.l1BeaconUrl}}
+            - --l1.rpckind={{.Values.l1RpcKind}}
+            - --l1.trustrpc
+            - --l1={{.Values.l1RpcUrl}}
+            - --l2.jwt-secret=/data/jwt.txt
+            - --l2=ws://localhost:8551
+            - --log.level=debug
+            - --metrics.enabled
+            - --metrics.port=7301
+            - --p2p.advertise.ip=$(EXTERNAL_IP)
+            - --p2p.advertise.tcp={{.Values.opNodeAdvertiseTcpPort}}
+            - --p2p.discovery.path=/data/p2p/p2p.db
+            - --p2p.listen.tcp=9222
+            - --p2p.peerstore.path=/data/p2p/p2p-peerstore.db
+            - --p2p.priv.path=/opnode-p2p/key
+            {{- if .Values.sequencerPrivateKeySecret }}
+            - --p2p.netrestrict={{.Values.netRestrictCIDR}}
+            - --p2p.no-discovery=true
+            {{- end }}
+
+
+
+            {{- if .Values.sequencer.privateKeySecret }}
+            - --p2p.sequencer.key=$(SEQUENCER_PRIVATE_KEY)
+            {{- end }}
+
+            - --p2p.static={{toJson .Values.opNodeStaticPeers | trimAll "[]" }}
+            - --rollup.config=/config/rollup.json
+            - --rpc.addr=0.0.0.0
+            {{- if .Values.adminState }}
+            - --rpc.admin-state=/data/admin.state
+            - --rpc.enable-admin=true
+            {{- end }}
+            - --rpc.port=9545
+            {{- if .Values.sequencer }}
+            - --sequencer.enabled=true
+            - --sequencer.stopped={{- default true .Values.sequencer.stopped }}
+            - --sequencer.l1-confs=5
+            - --verifier.l1-confs=4
+            {{- end }}
+          ports:
+            - name: metrics
+              containerPort: 7301
+            - name: rpc
+              containerPort: 9545
+            - name: p2p
+              containerPort: 9222
+            - name: discovery
+              containerPort: 9223
+              protocol: UDP
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              containerPort: rpc
+          # readinessProbe:
+          #   httpGet:
+          #     path: /healthz
+          #     containerPort: rpc
+
+
+
+
+
