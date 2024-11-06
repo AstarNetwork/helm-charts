@@ -157,6 +157,17 @@ entries:
     urls:
     - https://github.com/AstarNetwork/helm-charts/releases/download/karpenter-0.36.0/karpenter-0.36.0.tgz
     version: 0.36.0
+  opnode:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2024-11-06T21:31:55.248500878Z"
+    description: A Helm chart for Kubernetes
+    digest: b90181c8912374b2affef7a5f7a9eccd405af6c6dc9b0c4799b5b7a0fd597433
+    name: opnode
+    type: application
+    urls:
+    - https://github.com/AstarNetwork/helm-charts/releases/download/opnode-0.1.0/opnode-0.1.0.tgz
+    version: 0.1.0
   universal-helm:
   - apiVersion: v2
     created: "2024-10-25T12:54:38.77788882Z"
@@ -200,4 +211,4 @@ entries:
     urls:
     - https://github.com/AstarNetwork/helm-charts/releases/download/universal-helm-0.6.11/universal-helm-0.6.11.tgz
     version: 0.6.11
-generated: "2024-10-25T12:54:38.777911162Z"
+generated: "2024-11-06T21:31:55.248524452Z"
