@@ -12,10 +12,7 @@ spec:
       {{- include "opnode.selectorLabels" . | nindent 6 }}
   podManagementPolicy: {{ default "Parallel" .Values.podManagementPolicy }}
   updateStrategy:
-    type: {{ default "RollingUpdate" .Values.updateStrategy }}
-    {{- if (eq "Recreate" (default "RollingUpdate" .Values.updateStrategy)) }}
-    rollingUpdate: null
-    {{- end }}
+    type: RollingUpdate
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -30,9 +27,11 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "opnode.serviceAccountName" . }}
-      terminationGracePeriodSeconds: {{ default 30 .Values.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ default 180 .Values.terminationGracePeriodSeconds}}
+      {{- with .Values.podSecurityContext }}
       securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -51,8 +50,8 @@ spec:
       {{- end }}
       initContainers:
         - name: init-op-geth
-          image: {{.Values.opgeth.repo}}:{{.Values.opgeth.tag}}
-          imagePullPolicy: Always
+          image: {{.Values.opGeth.repo}}:{{.Values.opGeth.tag}}
+          imagePullPolicy: {{.Values.opGeth.imagePullPolicy}}
           env:
             - name: CONFIG_FILE
               value: /data/config.toml
@@ -90,16 +89,23 @@ spec:
               #* cat the config for visibility
               cat $CONFIG_FILE
           volumeMounts:
-            - name: opnode-data
+            - name: datadir
               mountPath: /data
       {{- with .Values.additionalInitContainers }}
         {{- toYaml . | nindent 6 }}
       {{- end }}
       containers:
         - name: op-geth
-          image: "{{ .Values.opGeth.repository }}:{{ .Values.opGeth.tag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-
+          image: {{.Values.opGeth.repo}}:{{.Values.opGeth.tag}}
+          imagePullPolicy: {{.Values.opGeth.imagePullPolicy}}
+          env:
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+          mountSecrets:
+            - name: opgeth-p2p
+              mountPath: /opgeth-p2p
           command:
             # - sleep
             # - infinity
@@ -117,19 +123,16 @@ spec:
             - --http.corsdomain=*
             - --http.port=8545
             - --http.vhosts=*
-            - --ws
-            - --ws.addr=0.0.0.0
-            - --ws.api=web3,debug,eth,txpool,net,engine
-            - --ws.origins=*
-            - --ws.port=8546
             - --metrics
             - --metrics.addr=0.0.0.0
             - --metrics.port=7300
-            - --nat=extip:$(EXTERNAL_IP)
+            - --nat=extip:$(NODE_IP)
             - --netrestrict={{.Values.netRestrictCIDR}}
             - --networkid={{.Values.l2NetworkId}}
             - --nodekey=/opgeth-p2p/key
             - --nodiscover=true
+            - --override.fjord=1729598400
+            - --override.granite=1729598400
             - --port=30303
             - --rollup.disabletxpoolgossip=false
             - --syncmode=full
@@ -137,32 +140,35 @@ spec:
             - --txpool.journalremotes=false
             - --txpool.nolocals=true
             - --verbosity=4
+            - --ws
+            - --ws.addr=0.0.0.0
+            - --ws.api=web3,debug,eth,txpool,net,engine
+            - --ws.origins=*
+            - --ws.port=8546
           ports:
-            - name: metrics
-              containerPort: 7300
-            - name: rpc
-              containerPort: 8545
-            - name: ws
-              containerPort: 8546
-            - name: p2p
-              containerPort: 30303
-            - name: discovery
-              containerPort: 30304
+            - name: opgeth-metrics
+              port: 7300
+            - name: opgeth-rpc
+              port: 8545
+            - name: opgeth-ws
+              port: 8546
+            - name: opgeth-p2p
+              port: 30303
+            - name: opgeth-discovery
+              port: 30304
               protocol: UDP
-          # livenessProbe:
-          #   httpGet:
-          #     path: /
-          #     port: http
-          # readinessProbe:
-          #   httpGet:
-          #     path: /
-          #     port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          livenessProbe:
+            tcpSocket:
+              port: 8545
+          readinessProbe:
+            tcpSocket:
+              port: 8545
 
         - name: op-node
           image: {{.Values.opNode.repo}}:{{.Values.opNode.tag}}
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          imagePullPolicy: {{ .Values.opNode.pullPolicy }}
           env:
             - name: EXTERNAL_IP
               valueFrom:
@@ -210,8 +216,6 @@ spec:
             - --p2p.no-discovery=true
             {{- end }}
 
-
-
             {{- if .Values.sequencer.privateKeySecret }}
             - --p2p.sequencer.key=$(SEQUENCER_PRIVATE_KEY)
             {{- end }}
@@ -231,13 +235,13 @@ spec:
             - --verifier.l1-confs=4
             {{- end }}
           ports:
-            - name: metrics
+            - name: opnode-metrics
               containerPort: 7301
-            - name: rpc
+            - name: opnode-rpc
               containerPort: 9545
-            - name: p2p
+            - name: opnode-p2p
               containerPort: 9222
-            - name: discovery
+            - name: opnode-discovery
               containerPort: 9223
               protocol: UDP
           resources:
@@ -251,7 +255,27 @@ spec:
           #   httpGet:
           #     path: /healthz
           #     containerPort: rpc
+          volumeMounts:
+            - name: datadir
+              mountPath: /data
 
+      volumes:
+        - name: datadir
+          persistentVolumeClaim:
+            claimName: datadir
+
+
+  volumeClaimTemplates:
+    - apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: datadir
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: {{ .Values.persistence.storageClassName }}
+        resources:
+          requests:
+            storage: {{ .Values.persistence.size }}
 
 
 

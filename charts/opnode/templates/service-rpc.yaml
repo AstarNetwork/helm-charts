@@ -7,9 +7,17 @@ metadata:
 spec:
   type: {{ .Values.service.type }}
   ports:
-    - port: {{ .Values.service.port }}
-      targetPort: http
+    - port: 8545
+      targetPort: opgeth-rpc
       protocol: TCP
-      name: http
+      name: opgeth-rpc
+    - port: 8546
+      targetPort: opgeth-rpc
+      protocol: TCP
+      name: opgeth-rpc
+    - port: 9545
+      targetPort: opnode-rpc
+      protocol: TCP
+      name: opnode-rpc
   selector:
     {{- include "opnode.selectorLabels" . | nindent 4 }}

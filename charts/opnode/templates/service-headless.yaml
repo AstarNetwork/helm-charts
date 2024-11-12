@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "opnode.fullname" . }}
+  labels:
+    {{- include "opnode.labels" . | nindent 4 }}
+spec:
+  selector:
+    {{- include "opnode.selectorLabels" . | nindent 4 }}
+  type: ClusterIP
+  clusterIP: None
+  publishNotReadyAddresses: true
+  ports:
+    - name: opgeth-rpc
+      targetPort: opgeth-
+      port: 8545
+      protocol: TCP
+    - name: opgeth-ws
+      targetPort: opgeth-ws
+      port: 8546
+      protocol: TCP
+    - name: opgeth-p2p
+      targetPort: http
+      port: 30303
+      protocol: TCP
+    - name: opnode-metrics
+      targetPort: http
+      port: 7300
+      protocol: TCP
+                            
+    - name: opgeth-discovery
+      targetPort: http
+      port: 30304
+      protocol: UDP
+                    
+    - name: opnode-rpc
+      targetPort: opnode-rpc
+      port: 9545
+      protocol: TCP
+    - name: opnode-p2p
+      targetPort: http
+      port: 9222
+      protocol: TCP
+    - name: opnode-metrics
+      targetPort: http
+      port: 7301
+      protocol: TCP
+                          
+    - name: opnode-discovery
+      targetPort: http
+      port: 9223
+      protocol: UDP
+                    

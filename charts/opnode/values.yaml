@@ -1,33 +1,33 @@
 # Default values for opnode.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
-op-node:
-  repository: op-node
+opNode:
+  repo: rrrrr/op-node
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
-op-geth:
-  repository: op-geth
+  tag: latest
+opGeth:
+  repo: rrrrr/op-geth
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
-
-l2NetworkId:
-
-l1BeaconUrl:
-l1RpcKind:
-l1RpcUrl: standard
-
-sequencer: {}
-  # privateKeySecret: 
-  # netRestrictCIDR:
+  tag: latest
 
 
-opNodeAdvertiseTcpPort:
-opNodeStaticPeers: []
-opGethStaticPeers: []
+persistence:
+  size: 1700Gi
+  storageClassName: localpv-hostpath
 
-replicaCount: 1
+genesisUrl: genesisUrl
+l2NetworkId: 9999999
+rollupJson: rollupJson
+l1BeaconUrl: l1BeaconUrl
+l1RpcKind: l1RpcKind
+l1RpcUrl: l1RpcUrl
+
+# sequencer: {}
+#   # privateKeySecret: 
+#   # netRestrictCIDR:
+replicas: 1
 
 imagePullSecrets: []
 nameOverride: ""
@@ -42,38 +42,22 @@ serviceAccount:
   # If not set and create is true, a name is generated using the fullname template
   name: ""
 
+additionalInitContainers: []
+
+additionalManifests: []
+
 podAnnotations: {}
 
 podSecurityContext: {}
   # fsGroup: 2000
 
-# securityContext: {}
+securityContext: {}
 #   # capabilities:
 #   #   drop:
 #   #   - ALL
 #   # readOnlyRootFilesystem: true
 #   # runAsNonRoot: true
 #   # runAsUser: 1000
-
-service:
-  type: ClusterIP
-  port: 80
-
-ingress:
-  enabled: false
-  className: ""
-  annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
-  hosts:
-    - host: chart-example.local
-      paths:
-        - path: /
-          pathType: ImplementationSpecific
-  tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
@@ -87,8 +71,6 @@ resources: {}
   #   cpu: 100m
   #   memory: 128Mi
 
-additionalInitContainers: []
-
 nodeSelector: {}
 
 tolerations: []
@@ -97,4 +79,23 @@ affinity: {}
 
 topologySpreadConstraints: []
 
-additionalManifests: []
+
+# service:
+#   type: ClusterIP
+#   port: 80
+
+# ingress:
+#   enabled: false
+#   className: ""
+#   annotations: {}
+#     # kubernetes.io/ingress.class: nginx
+#     # kubernetes.io/tls-acme: "true"
+#   hosts:
+#     - host: chart-example.local
+#       paths:
+#         - path: /
+#           pathType: ImplementationSpecific
+#   tls: []
+#   #  - secretName: chart-example-tls
+#   #    hosts:
+#   #      - chart-example.local
