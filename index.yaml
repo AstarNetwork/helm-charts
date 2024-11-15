@@ -168,6 +168,22 @@ entries:
     urls:
     - https://github.com/AstarNetwork/helm-charts/releases/download/opnode-0.1.0/opnode-0.1.0.tgz
     version: 0.1.0
+  uni-helm:
+  - apiVersion: v2
+    created: "2024-11-15T03:58:35.901599683Z"
+    description: A Helm chart for Kubernetes
+    digest: 151035d785e21b6bd5772cd7fd3ac1b2d56a6daf98115f366c814f0d9d74e6ca
+    keywords:
+    - blockchain
+    - web3
+    maintainers:
+    - email: vlad.sh@startale.com
+    - email: marijan.cavar@startale.com
+    name: uni-helm
+    type: application
+    urls:
+    - https://github.com/AstarNetwork/helm-charts/releases/download/uni-helm-1.0.0/uni-helm-1.0.0.tgz
+    version: 1.0.0
   universal-helm:
   - apiVersion: v2
     created: "2024-10-25T12:54:38.77788882Z"
@@ -211,4 +227,4 @@ entries:
     urls:
     - https://github.com/AstarNetwork/helm-charts/releases/download/universal-helm-0.6.11/universal-helm-0.6.11.tgz
     version: 0.6.11
-generated: "2024-11-06T21:31:55.248524452Z"
+generated: "2024-11-15T03:58:35.901620972Z"
