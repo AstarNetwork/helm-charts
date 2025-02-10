@@ -225,6 +225,21 @@ entries:
     version: 1.0.0
   universal-helm:
   - apiVersion: v2
+    created: "2025-02-10T01:55:43.008947376Z"
+    description: A Helm chart for Kubernetes
+    digest: 97d5d38891c690f9eed8691cca60e58a9e56e2c1a7d0f232edf9f83079bb96c2
+    keywords:
+    - blockchain
+    - web3
+    maintainers:
+    - email: vlad.sh@startale.com
+    - email: marijan.cavar@startale.com
+    name: universal-helm
+    type: application
+    urls:
+    - https://github.com/AstarNetwork/helm-charts/releases/download/universal-helm-0.7.1/universal-helm-0.7.1.tgz
+    version: 0.7.1
+  - apiVersion: v2
     created: "2024-10-25T12:54:38.77788882Z"
     description: A Helm chart for Kubernetes
     digest: 3f0d6854718914373244e4bef606ec7015cc56de22a15b995e126ca6332be091
@@ -266,4 +281,4 @@ entries:
     urls:
     - https://github.com/AstarNetwork/helm-charts/releases/download/universal-helm-0.6.11/universal-helm-0.6.11.tgz
     version: 0.6.11
-generated: "2024-12-12T20:07:14.722571737Z"
+generated: "2025-02-10T01:55:43.008979085Z"
