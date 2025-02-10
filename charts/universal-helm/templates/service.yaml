@@ -13,6 +13,7 @@ spec:
     #! Headless service's port doesn't matter coz you addressing pod directly
     - port: 12345
   clusterIP: None
+  publishNotReadyAddresses: true
 
 {{- range $kcntnr, $cntnr := $sts.containers }}
 {{- range $kprt, $prt := $cntnr.ports }}
@@ -37,7 +38,9 @@ spec:
       targetPort: {{ $prt.port }}
       protocol: {{ default "TCP" $prt.protocol }}
       name: {{ $prt.name }}
-
+      {{- if default false $prt.publishNotReadyAddresses}}
+      publishNotReadyAddresses: true
+      {{- end}}
 {{- end }}
 {{- end }}
 {{- end }}
@@ -67,6 +70,9 @@ spec:
       targetPort: {{ $prt.port }}
       protocol: {{ default "TCP" $prt.protocol }}
       name: {{ $prt.name }}
+      {{- if default false $prt.publishNotReadyAddresses}}
+      publishNotReadyAddresses: true
+      {{- end}}
 {{- end }}
 {{- end }}
 {{- end }}

@@ -8,7 +8,8 @@ keywords:
 
 maintainers:
   - email: vlad.sh@startale.com
+  - email: marijan.cavar@startale.com
 
 type: application
 
-version: 0.6.13
+version: 0.7.1
