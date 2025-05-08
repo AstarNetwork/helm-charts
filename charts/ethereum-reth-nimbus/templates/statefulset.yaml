@@ -240,7 +240,18 @@ spec:
 
               #* if EIPs are not provided, get the IP resolving the LB's DNS name
               {{- if eq (len .Values.p2pNlb.eIPs) 0 }}
-              #* Takes ab 200  seconds to make the DNS name resolvable
+
+              #* Whait LB is deployed and got public DNS name
+              for i in $(seq 20); do
+                LB_DNS_NAME=$(kubectl get svc $SVC_NAME -o json| jq -r '.status.loadBalancer.ingress.[0].hostname')
+                if [ "$LB_DNS_NAME" != "null" ]; then
+                  break
+                fi
+                echo "$i: Waiting NLB is provisioned"
+                sleep 5
+              done
+
+              #* Resolve the LB's DNS name to get the its IP, which is the node external IP
               for i in $(seq 10); do
                 if nslookup $LB_DNS_NAME; then
                   EXTERNAL_IP=$(nslookup $LB_DNS_NAME|tail -n+4|grep "Address:"|cut -d" " -f2)
