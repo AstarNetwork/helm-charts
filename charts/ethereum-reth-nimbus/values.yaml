@@ -173,17 +173,15 @@ pullPolicy: IfNotPresent
 podManagementPolicy: Parallel
 
 rbac:
-  # -- Specifies whether RBAC resources are to be created
-  create: true
   rules:
-    # Required to get information about the services nodePort.
-    - apiGroups: [""]
+    - apiGroups: ['*']
       resources:
         - services
-      verbs:
-        - get
-        - list
-        - watch
+      verbs: ['*']
+    - apiGroups: ['*']
+      resources:
+        - pods
+      verbs: ['*']
 
 # -- How long to wait until the pod is forcefully terminated
 terminationGracePeriodSeconds: 90
