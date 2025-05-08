@@ -173,11 +173,14 @@ spec:
               CURRENT_AZ=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/placement/availability-zone)
               SUBNET_NAME="{{.Values.p2pNlb.subnetPrefix}}-$CURRENT_AZ"
 
+              {{- if gt (len .Values.p2pNlb.eIPs) 0 }}
+              #* if EIPs are provided, use them
               ORDINAL=$(echo $HOSTNAME|grep -Eo '[0-9]+$')
-              #* Create LB service to expose p2p
               EIP_ID=$(echo '{{toJson .Values.p2pNlb.eIPs}}' | jq -r '.['$ORDINAL']'|cut -d: -f1| xargs)
               EXTERNAL_IP=$(echo '{{toJson .Values.p2pNlb.eIPs}}' | jq -r '.['$ORDINAL']' |cut -d: -f2| xargs)
+              {{- end}}
 
+              #* Create LB service to expose p2p
               SVC_YAML=$(mktemp)
               cat >$SVC_YAML <<EOF
               apiVersion: v1
@@ -191,11 +194,13 @@ spec:
                 annotations:
                   argocd.argoproj.io/compare-options: IgnoreExtraneous
                   argocd.argoproj.io/sync-options: Prune=false
-                  service.beta.kubernetes.io/aws-load-balancer-name: $ARGOCD_INSTANCE_NAME}-${HOSTNAME
+                  service.beta.kubernetes.io/aws-load-balancer-name: $ARGOCD_INSTANCE_NAME-$HOSTNAME
                   service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
                   service.beta.kubernetes.io/aws-load-balancer-type: external
                   service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: ip
+              {{- if gt (len .Values.p2pNlb.eIPs) 0 }}
                   service.beta.kubernetes.io/aws-load-balancer-eip-allocations: $EIP_ID
+              {{- end }}
                   service.beta.kubernetes.io/aws-load-balancer-subnets: $SUBNET_NAME
                   service.beta.kubernetes.io/aws-load-balancer-target-group-attributes: preserve_client_ip.enabled=true
                   service.beta.kubernetes.io/aws-load-balancer-security-groups: {{.Values.p2pNlb.securityGroup}}
@@ -231,6 +236,22 @@ spec:
 
               cat $SVC_YAML
               kubectl -n {{.Release.Namespace}} apply -f $SVC_YAML
+
+              #* if EIPs are not provided, get the IP resolving the LB's DNS name
+              {{- if eq (len .Values.p2pNlb.eIPs) 0 }}
+              #* Takes ab 200  seconds to make the DNS name resolvable
+              for i in $(seq 10); do
+                if nslookup $LB_DNS_NAME; then
+                  EXTERNAL_IP=$(nslookup $LB_DNS_NAME|tail -n+4|grep "Address:"|cut -d" " -f2)
+                  #* If EXTERNAL_IP is not empty
+                  if [ -n "$EXTERNAL_IP" ]; then
+                    break
+                  fi
+                fi
+                echo "$i: Waiting NLB DNS name is provisioned"
+                sleep 30
+              done
+              {{- end}}
 
               kubectl annotate pod $HOSTNAME external-ip=$EXTERNAL_IP --overwrite;
 

@@ -5,3 +5,9 @@
 #   {{ required "bucketRegion must be specified" .Values.dataSnapshot.bucketRegion }}
 #   {{ required "awsSnapshotIamRoleArn must be specified" .Values.dataSnapshot.awsSnapshotIamRoleArn }}
 # {{- end }}
+
+# Check 
+#EIps == replicas
+# Subnet prefix 
+#
+#
