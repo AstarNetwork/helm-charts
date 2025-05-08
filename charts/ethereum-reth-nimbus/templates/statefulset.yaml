@@ -118,7 +118,7 @@ spec:
                 openssl rand -hex 32 > $APP_HOME/jwt.txt
               fi
 
-              if [[ -d $APP_HOME/reth && -d $APP_HOME/nimbus ]]; then
+              if [[ ! -d $APP_HOME/reth || ! -d $APP_HOME/nimbus ]]; then
                 mkdir -p $APP_HOME/reth $APP_HOME/nimbus
                 chown -R {{ .Values.securityContext.runAsUser }}:{{ .Values.securityContext.runAsGroup }} $APP_HOME
               fi
