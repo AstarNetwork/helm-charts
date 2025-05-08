@@ -1,8 +1,16 @@
-# -- Overrides the chart's name
-nameOverride: ""
+# -- Number of replicas
+replicas: 1
 
-# -- Overrides the chart's computed fullname
-fullnameOverride: ""
+ethereumChain: null
+
+# -- Node selector for pods
+nodeSelector: {}
+  # karpenter.sh/nodepool: lvm-localpv
+  # node.kubernetes.io/instance-type: i3.4xlarge
+
+persistence:
+  size: 20Gi
+  storageClassName: lvm-localpv
 
 reth:
   image:
@@ -32,9 +40,42 @@ nimbus:
       # cpu: 500m
       memory: 12Gi
 
-# -- Number of replicas
-replicas: 1
-ethereumChain: sepolia
+ethereumExporter:
+  enabled: true
+  image:
+    repository: ethpandaops/ethereum-metrics-exporter
+    tag: 0.27.1-debian
+  resources:
+    limits:
+      cpu: 500m
+      memory: 128Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+
+dataSnapshot:
+  # Adds init container to restare data from S3 snapshot
+  restoreData: false
+  # Creates cronjob to schedule data abackups to S3
+  backupData: false
+
+  # -- Backup bucket name
+  bucketName: ""
+  # -- Backup bucket region
+  bucketRegion: ""
+  # -- Backup bucket prefix
+  bucketPrefix: ""
+  # IAM role to dowenload/upload data from/to S3
+  awsSnapshotIamRoleArn: null
+
+  schedule: "0 0 * * *"
+  # -- Backup retention
+  retention: 7
+
+# -- Pod annotations
+podAnnotations:
+  karpenter.sh/do-not-disrupt: "true"
+
 p2pNlb:
   #* AWS EIP to attach to NLB exposing p2p ports
   eIPs: []
@@ -42,26 +83,6 @@ p2pNlb:
   securityGroup: AWS-Security-Group
   #* Subnet name without az name, subnets should be named in the following way: `${publicSubnetPrefix}-${azName}`.
   subnetPrefix: AWS-Subnet-Prefix
-
-dataSnapshot:
-  # -- Backup enabled
-  restoreData: false
-  # -- Backup schedule
-  schedule: "0 0 * * *"
-  # -- Backup retention
-  retention: 7
-  # -- Backup bucket name
-  bucketName: ""
-  # -- Backup bucket region
-  bucketRegion: ""
-  # -- Backup bucket prefix
-  bucketPrefix: ""
-
-pullPolicy: IfNotPresent
-
-# -- Extra args for the reth container
-extraArgs: []
-  #- --network=holesky
 
 ingress:
   # -- Ingress resource for the HTTP API
@@ -80,106 +101,33 @@ ingress:
   #    hosts:
   #      - chart-example.local
 
-# -- Affinity configuration for pods
-affinity: {}
+serviceAccount:
+  #* if dataSnapshot.restoreData is true, or  dataSnapshot.backupData is true
+  #* awsSnapshotIamRoleArn will be added to annotations of the SA
+  annotations: {}
+  name: node
 
-# -- Image pull secrets for Docker images
-imagePullSecrets: []
-
-# -- Annotations for the StatefulSet
-annotations: {}
-
-# -- Liveness probe
-# # @default -- See `values.yaml`
-# livenessProbe:
-#   tcpSocket:
-#     port: http-rpc
-#   initialDelaySeconds: 60
-#   periodSeconds: 120
-
-# # -- Readiness probe
-# # @default -- See `values.yaml`
-# readinessProbe:
-#   tcpSocket:
-#     port: http-rpc
-#   initialDelaySeconds: 10
-#   periodSeconds: 10
-
-# -- Node selector for pods
-nodeSelector: {}
-
-persistence:
-  size: 20Gi
-  storageClassName: null
-
-# -- Pod labels
-podLabels: {}
-
-# -- Pod annotations
-podAnnotations: {}
-
-# -- Pod management policy
-podManagementPolicy: OrderedReady
-
-# -- Pod priority class
-priorityClassName: null
-
-rbac:
-  # -- Specifies whether RBAC resources are to be created
-  create: true
-  rules:
-    # Required to get information about the services nodePort.
-    - apiGroups: [""]
-      resources:
-      - services
-      verbs:
-      - get
-      - list
-      - watch
-
-# -- Resource requests and limits
-resources: {}
-# limits:
-#   cpu: 500m
-#   memory: 2Gi
-# requests:
-#   cpu: 300m
-#   memory: 1Gi
+# -- Overrides the chart's computed fullname
+fullnameOverride: node
 
 # -- The security context for pods
 # @default -- See `values.yaml`
 securityContext:
-  fsGroup: 10001
-  runAsGroup: 10001
+  runAsGroup: 1001
   runAsNonRoot: true
-  runAsUser: 10001
+  runAsUser: 1001
+  fsGroupChangePolicy: "OnRootMismatch"
 
 # -- The security context for containers
 # @default -- See `values.yaml`
-containerSecurityContext: {}
+containerSecurityContext:
   # capabilities:
   #   drop:
   #   - ALL
   # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
-
-serviceAccount:
-  annotations: {}
-  # -- The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
-  name: ""
-
-# -- How long to wait until the pod is forcefully terminated
-terminationGracePeriodSeconds: 90
-
-# # -- Tolerations for pods
-# ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-# tolerations: []
-
-# # -- Topology Spread Constraints for pods
-# ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/
-# topologySpreadConstraints: []
+  allowPrivilegeEscalation: false
+  runAsNonRoot: true
+  runAsUser: 1001
 
 tolerations:
   - effect: NoSchedule
@@ -195,7 +143,67 @@ topologySpreadConstraints:
     topologyKey: topology.kubernetes.io/zone
     whenUnsatisfiable: DoNotSchedule
 
+vmPodScrape:
+  # -- If true, a ServiceMonitor CRD is created for a prometheus operator
+  # https://github.com/coreos/prometheus-operator
+  enabled: true
+  #* region to use in region_pod label
+  #* This is used to identify the region of the pod in the metrics
+  region: apne1
+  # # -- Path to scrape
+  # path: /debug/metrics/prometheus
+  # # -- Alternative namespace for ServiceMonitor
+  # namespace: null
+  # # -- Additional ServiceMonitor labels
+  # labels: {}
+  # # -- Additional ServiceMonitor annotations
+  # annotations: {}
+  # # -- ServiceMonitor scrape interval
+  # interval: 1m
+  # # -- ServiceMonitor scheme
+  # scheme: http
+  # # -- ServiceMonitor TLS configuration
+  # tlsConfig: {}
+  # # -- ServiceMonitor scrape timeout
+  # scrapeTimeout: 30s
+  # # -- ServiceMonitor relabelings
+  # relabelings: []
+pullPolicy: IfNotPresent
+# -- Pod management policy
+podManagementPolicy: Parallel
 
+rbac:
+  # -- Specifies whether RBAC resources are to be created
+  create: true
+  rules:
+    # Required to get information about the services nodePort.
+    - apiGroups: [""]
+      resources:
+        - services
+      verbs:
+        - get
+        - list
+        - watch
+
+# -- How long to wait until the pod is forcefully terminated
+terminationGracePeriodSeconds: 90
+# -- Affinity configuration for pods
+affinity: {}
+
+# -- Pod labels
+podLabels: {}
+
+# -- Image pull secrets for Docker images
+imagePullSecrets: []
+
+# -- Annotations for the StatefulSet
+annotations: {}
+
+# -- Overrides the chart's name
+nameOverride: ""
+
+# -- Pod priority class
+priorityClassName: null
 
 # -- Define the PodDisruptionBudget spec
 # If not set then a PodDisruptionBudget will not be created
@@ -245,29 +253,6 @@ secretEnv: {}
 #   #  requests:
 #   #    cpu: 100m
 #   #    memory: 128Mi
-
-serviceMonitor:
-  # -- If true, a ServiceMonitor CRD is created for a prometheus operator
-  # https://github.com/coreos/prometheus-operator
-  enabled: false
-  # -- Path to scrape
-  path: /debug/metrics/prometheus
-  # -- Alternative namespace for ServiceMonitor
-  namespace: null
-  # -- Additional ServiceMonitor labels
-  labels: {}
-  # -- Additional ServiceMonitor annotations
-  annotations: {}
-  # -- ServiceMonitor scrape interval
-  interval: 1m
-  # -- ServiceMonitor scheme
-  scheme: http
-  # -- ServiceMonitor TLS configuration
-  tlsConfig: {}
-  # -- ServiceMonitor scrape timeout
-  scrapeTimeout: 30s
-  # -- ServiceMonitor relabelings
-  relabelings: []
 
 
 

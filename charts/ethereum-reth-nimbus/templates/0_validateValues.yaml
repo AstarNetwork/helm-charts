@@ -1,0 +1,7 @@
+# {{ required "ethereumChain must be specified" .Values.ethereumChain }}
+
+# {{- if or .Values.dataSnapshot.restoreData .Values.dataSnapshot.backupData}}
+#   {{ required "s3BucketName must be specified" .Values.dataSnapshot.s3BucketName }}
+#   {{ required "bucketRegion must be specified" .Values.dataSnapshot.bucketRegion }}
+#   {{ required "awsSnapshotIamRoleArn must be specified" .Values.dataSnapshot.awsSnapshotIamRoleArn }}
+# {{- end }}

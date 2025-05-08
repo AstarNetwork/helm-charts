@@ -1,44 +1,40 @@
-{{- $dataPath := "/data" }}
-{{- $ethClients := "reth-nimbus" }}
-{{- $resticRepo := printf "s3:https://s3.amazonaws.com/%s/%s/%s" .Values.dataSnapshot.bucketName .Values.ethereumChain $ethClients}}
-{{- $resticRepoRegion := .Values.dataSnapshot.bucketRegion }}
+---
+# Source: ethereum-reth-nimbus/templates/statefulset.yaml
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ include "node.fullname" . }}
+  name: node
   labels:
-    {{- include "node.labels" . | nindent 4 }}
+    helm.sh/chart: ethereum-reth-nimbus-0.0.15
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/managed-by: Helm
   annotations:
-    {{- toYaml .Values.annotations | nindent 4 }}
+    {}
 spec:
-  podManagementPolicy: {{ .Values.podManagementPolicy }}
-  replicas: {{ .Values.replicas }}
+  podManagementPolicy: Parallel
+  replicas: 1
   selector:
     matchLabels:
-      {{- include "node.selectorLabels" . | nindent 6 }}
-  serviceName: {{ include "node.fullname" . }}
+      app.kubernetes.io/instance: release-name
+  serviceName: node
   updateStrategy:
-    {{- toYaml .Values.updateStrategy | nindent 4 }}
+    type: RollingUpdate
   template:
     metadata:
       labels:
-        {{- include "node.selectorLabels" . | nindent 8 }}
-        {{- with .Values.podLabels }}
-        {{- toYaml . | nindent 8 }}
-        {{- end }}
+        app.kubernetes.io/instance: release-name
       annotations:
-        {{- with .Values.podAnnotations }}
-        {{- toYaml . | nindent 8 }}
-        {{- end }}
+        karpenter.sh/do-not-disrupt: "true"
     spec:
-      serviceAccountName: {{ include "node.serviceAccountName" . }}
-    {{- if .Values.priorityClassName }}
-      priorityClassName: {{ .Values.priorityClassName }}
-    {{- end }}
+      serviceAccountName: node
       securityContext:
-        {{- toYaml .Values.securityContext | nindent 8 }}
+        fsGroupChangePolicy: OnRootMismatch
+        runAsGroup: 1001
+        runAsNonRoot: true
+        runAsUser: 1001
       nodeSelector:
-        {{- toYaml .Values.nodeSelector | nindent 8 }}
+        karpenter.sh/nodepool: lvm-localpv
+        node.kubernetes.io/instance-type: i3.4xlarge
       affinity:
         #* Don't run more than one on the same node
         podAntiAffinity:
@@ -48,66 +44,28 @@ spec:
                 - key: app.kubernetes.io/instance
                   operator: In
                   values:
-                    - {{ include "node.fullname" . }}
+                    - node
               topologyKey: kubernetes.io/hostname
-        {{- with .Values.affinity }}
-        {{- toYaml . | nindent 8 }}
-        {{- end }}
       tolerations:
-        {{- with .Values.tolerations }}
-        {{- toYaml . | nindent 8 }}
-        {{- end }}
+        - effect: NoSchedule
+          key: lvm-localpv
+          operator: Equal
+          value: "true"
       topologySpreadConstraints:
-        {{- with .Values.topologySpreadConstraints }}
-        {{- toYaml . | nindent 8 }}
-        {{- end }}
-      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+        - labelSelector:
+            matchLabels:
+              statefulsetname: node
+          maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: DoNotSchedule
+      terminationGracePeriodSeconds: 90
       initContainers:
-      {{- if .Values.dataSnapshot.restoreData | default false}}
-        - name: restore-from-backup
-          image: restic/restic:latest
-          securityContext:
-            runAsUser: 0
-          env:
-            - name: APP_HOME
-              value: "{{$dataPath}}"
-            - name: AWS_DEFAULT_REGION
-              value: "{{$resticRepoRegion}}"
-            - name: RESTIC_PASSWORD
-              value: "astar"
-            - name: RESTIC_PROGRESS_FPS
-              value: "0.016666"
-            - name: RESTIC_REPOSITORY
-              value: "{{$resticRepo}}"
-            - name: RESTIC_HOST
-              value: "{{$ethClients}}"
-          command:
-            - /bin/sh
-            - -c
-            - |
-              set -xu
-
-              if [ -d $APP_HOME/reth ]; then
-                echo "$APP_HOME/reth folder exists, skipping restore"
-                exit 0
-              fi
-
-              restic self-update
-
-              #* Restore the data
-              restic restore latest --target $APP_HOME
-
-              chown -R {{ .Values.securityContext.runAsUser }}:{{ .Values.securityContext.runAsGroup }} $APP_HOME
-          volumeMounts:
-            - name: storage
-              mountPath: {{$dataPath}}
-      {{- end }}
 
         - name: init-dirs
           image: alpine:latest
           env:
             - name: APP_HOME
-              value: {{$dataPath}}
+              value: /data
           command:
             - sh
             - -exuc
@@ -118,40 +76,41 @@ spec:
                 openssl rand -hex 32 > $APP_HOME/jwt.txt
               fi
 
-              if [[ -d $APP_HOME/reth && -d $APP_HOME/nimbus ]]; then
+              if [ -d $APP_HOME/reth && -d $APP_HOME/nimbus ]; then
                 mkdir -p $APP_HOME/reth $APP_HOME/nimbus
-                chown -R {{ .Values.securityContext.runAsUser }}:{{ .Values.securityContext.runAsGroup }} $APP_HOME
+                chown -R 1001:1001 $APP_HOME
               fi
           securityContext:
             runAsUser: 0
           volumeMounts:
             - name: storage
-              mountPath: {{$dataPath}}
+              mountPath: /data
 
         - name: nimbus-trusted-sync
           image: alpine:latest
           env:
             - name: APP_HOME
-              value: {{$dataPath}}
+              value: /data
           command:
             - sh
             - -exuc
             - |
-              id
-              if [ ! -d $APP_HOME/nimbus/db ]; then
+              if [ -d $APP_HOME/nimbus/db ]; then
                 #* if nimbus folder is empty state sync it manually 1st time
                 #* see https://nimbus.guide/trusted-node-sync.html
                 /home/user/nimbus_beacon_node \
                 trustedNodeSync \
-                  --network={{.Values.ethereumChain}} \
+                  --network=sepolia \
                   --data-dir=$APP_HOME/nimbus \
-                  --trusted-node-url=https://beaconstate-{{.Values.ethereumChain}}.chainsafe.io \
+                  --trusted-node-url=https://beaconstate-sepolia.chainsafe.io \
                   --reindex \
                   --backfill
               fi
+          securityContext:
+            runAsUser: 0
           volumeMounts:
             - name: storage
-              mountPath: {{$dataPath}}
+              mountPath: /data
 
         - name: create-p2p-service
           image: alpine/k8s:1.30.4
@@ -167,16 +126,16 @@ spec:
               SVC_NAME=$HOSTNAME-p2p
 
               #* Delete LB service if exist
-              kubectl -n {{.Release.Namespace}} delete svc --wait=true $SVC_NAME || true
+              kubectl -n default delete svc --wait=true $SVC_NAME || true
 
               TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
               CURRENT_AZ=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/placement/availability-zone)
-              SUBNET_NAME="{{.Values.p2pNlb.subnetPrefix}}-$CURRENT_AZ"
+              SUBNET_NAME="AWS-Subnet-Prefix-$CURRENT_AZ"
 
               ORDINAL=$(echo $HOSTNAME|grep -Eo '[0-9]+$')
               #* Create LB service to expose p2p
-              EIP_ID=$(echo '{{toJson .Values.p2pNlb.eIPs}}' | jq -r '.['$ORDINAL']'|cut -d: -f1| xargs)
-              EXTERNAL_IP=$(echo '{{toJson .Values.p2pNlb.eIPs}}' | jq -r '.['$ORDINAL']' |cut -d: -f2| xargs)
+              EIP_ID=$(echo '[]' | jq -r '.['$ORDINAL']'|cut -d: -f1| xargs)
+              EXTERNAL_IP=$(echo '[]' | jq -r '.['$ORDINAL']' |cut -d: -f2| xargs)
 
               SVC_YAML=$(mktemp)
               cat >$SVC_YAML <<EOF
@@ -198,7 +157,7 @@ spec:
                   service.beta.kubernetes.io/aws-load-balancer-eip-allocations: $EIP_ID
                   service.beta.kubernetes.io/aws-load-balancer-subnets: $SUBNET_NAME
                   service.beta.kubernetes.io/aws-load-balancer-target-group-attributes: preserve_client_ip.enabled=true
-                  service.beta.kubernetes.io/aws-load-balancer-security-groups: {{.Values.p2pNlb.securityGroup}}
+                  service.beta.kubernetes.io/aws-load-balancer-security-groups: AWS-Security-Group
                   service.beta.kubernetes.io/aws-load-balancer-manage-backend-security-group-rules: "false"
                   service.beta.kubernetes.io/aws-load-balancer-healthcheck-protocol: http
                   service.beta.kubernetes.io/aws-load-balancer-healthcheck-port: "8545"
@@ -230,9 +189,13 @@ spec:
               EOF
 
               cat $SVC_YAML
-              kubectl -n {{.Release.Namespace}} apply -f $SVC_YAML
+              kubectl -n default apply -f $SVC_YAML
 
               kubectl annotate pod $HOSTNAME external-ip=$EXTERNAL_IP --overwrite;
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 1001
 
         - name: replicas-peering
           image: alpine/k8s:1.30.4
@@ -243,21 +206,18 @@ spec:
               #* Get enodes of its replicas to peer with
               RETH_TRUSTED_PEERS=$(curl -s -X POST -H "Content-Type: application/json" \
                       --data '{"jsonrpc":"2.0","method":"admin_nodeInfo","params":[],"id":1}' \
-                      "http://node-[0-{{.Values.replicas}}].node:8545" | jq -r .result.enode | paste -sd ",")
+                      "http://node-[0-1].node:8545" | jq -r .result.enode | paste -sd ",")
 
               #* Annotate the pod with static peers info, to have it in ENV var in the container
               kubectl annotate pod $HOSTNAME reth-trusted-peers=$RETH_TRUSTED_PEERS --overwrite;
           securityContext:
-            {{- toYaml .Values.containerSecurityContext | nindent 12 }}
-
-      {{- with .Values.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 1001
       containers:
         - name: reth
-          image: {{ .Values.reth.image.repository }}:{{ .Values.reth.image.tag }}
-          imagePullPolicy: {{ .Values.pullPolicy }}
+          image: ghcr.io/paradigmxyz/reth:v1.3.12
+          imagePullPolicy: IfNotPresent
           env:
             - name: EXTERNAL_IP
               valueFrom:
@@ -268,13 +228,13 @@ spec:
                 fieldRef:
                   fieldPath: metadata.annotations['reth-trusted-peers']
             - name: APP_HOME
-              value: "{{$dataPath}}"
+              value: "/data"
           command:
             # - sleep
             # - "10000000000000"
             - reth
             - node
-            - --chain={{.Values.ethereumChain}}
+            - --chain=sepolia
             - --datadir=$(APP_HOME)/reth
             - --http
             - --http.addr=0.0.0.0
@@ -316,34 +276,37 @@ spec:
             tcpSocket:
               port: 8545
           resources:
-            {{- toYaml .Values.reth.resources | nindent 12 }}
+            limits:
+              memory: 24Gi
+            requests:
+              cpu: 2
+              memory: 16Gi
           lifecycle:
             preStop:  #* To let it reply to all requests in process
               exec:
                 command: ["/bin/sh", "-c", "sleep 60"]
           securityContext:
-            {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 1001
           volumeMounts:
-            {{- if .Values.extraVolumeMounts }}
-              {{ toYaml .Values.extraVolumeMounts | nindent 12}}
-            {{- end }}
             - name: storage
-              mountPath: {{$dataPath}}
+              mountPath: /data
         - name: nimbus
-          image: {{.Values.nimbus.image.repository}}:{{.Values.nimbus.image.tag}}
-          imagePullPolicy: {{ .Values.pullPolicy }}
+          image: statusim/nimbus-eth2:amd64-v25.4.0
+          imagePullPolicy: IfNotPresent
           env:
             - name: EXTERNAL_IP
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.annotations['external-ip']
             - name: APP_HOME
-              value: "{{$dataPath}}"
+              value: "/data"
           command:
             # - sleep
             # - "10000000000000"
             - /home/user/nimbus_beacon_node
-            - --network={{.Values.ethereumChain}}
+            - --network=sepolia
             - --data-dir=$(APP_HOME)/nimbus
             - --el=http://localhost:8551
             - --jwt-secret=$(APP_HOME)/jwt.txt
@@ -375,24 +338,25 @@ spec:
             tcpSocket:
               port: 9545
           resources:
-            {{- toYaml .Values.nimbus.resources | nindent 12 }}
+            limits:
+              memory: 12Gi
+            requests:
+              cpu: 1
+              memory: 8Gi
           lifecycle:
             preStop:  #* To let it reply to all requests in process
               exec:
                 command: ["/bin/sh", "-c", "sleep 60"]
           securityContext:
-            {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 1001
           volumeMounts:
-            {{- if .Values.extraVolumeMounts }}
-              {{ toYaml .Values.extraVolumeMounts | nindent 12}}
-            {{- end }}
             - name: storage
-              mountPath: {{$dataPath}}
-
-      {{- if .Values.ethereumExporter.enabled }}
+              mountPath: /data
         - name: ethereum-exporter
-          image: {{.Values.ethereumExporter.image.repository}}:{{.Values.ethereumExporter.image.tag}}
-          imagePullPolicy: {{ .Values.pullPolicy }}
+          image: ethpandaops/ethereum-metrics-exporter:0.27.1-debian
+          imagePullPolicy: IfNotPresent
           command:
             # - sleep
             # - "10000000000000"
@@ -413,15 +377,18 @@ spec:
             tcpSocket:
               port: 7302
           resources:
-            {{- toYaml .Values.ethereumExporter.resources | nindent 12 }}
+            limits:
+              cpu: 500m
+              memory: 128Mi
+            requests:
+              cpu: 50m
+              memory: 64Mi
           securityContext:
-            {{- toYaml .Values.containerSecurityContext | nindent 12 }}
-      {{- end }}
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 1001
 
       volumes:
-      {{- if .Values.extraVolumes }}
-        {{ toYaml .Values.extraVolumes | nindent 8}}
-      {{- end }}
   volumeClaimTemplates:
     - metadata:
         name: storage
@@ -429,5 +396,5 @@ spec:
         accessModes: ["ReadWriteOnce"]
         resources:
           requests:
-            storage: {{ .Values.persistence.size | quote }}
-        storageClassName: {{ .Values.persistence.storageClassName }}
+            storage: "20Gi"
+        storageClassName: lvm-localpv
