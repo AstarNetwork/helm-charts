@@ -2,6 +2,20 @@ apiVersion: v1
 entries:
   ethereum-reth-nimbus:
   - apiVersion: v2
+    created: "2025-05-08T23:42:17.257804382Z"
+    description: 'Ethereum node with reth and nimbus '
+    digest: 852987d1b325385150c6e602f3d2168d675a9ea685263b385fc602506cd5017e
+    home: https://soneium.com
+    maintainers:
+    - name: vlad
+    name: ethereum-reth-nimbus
+    sources:
+    - https://github.com/souneium
+    type: application
+    urls:
+    - https://github.com/AstarNetwork/helm-charts/releases/download/ethereum-reth-nimbus-0.0.26/ethereum-reth-nimbus-0.0.26.tgz
+    version: 0.0.26
+  - apiVersion: v2
     created: "2025-05-08T13:24:11.889981643Z"
     description: 'Ethereum node with reth and nimbus '
     digest: 7557cacabfd39ff72ada19510b43188b01f8438b702b9dec168452e44eb26745
@@ -451,4 +465,4 @@ entries:
     urls:
     - https://github.com/AstarNetwork/helm-charts/releases/download/universal-helm-0.6.11/universal-helm-0.6.11.tgz
     version: 0.6.11
-generated: "2025-05-08T13:24:11.890068244Z"
+generated: "2025-05-08T23:42:17.257877839Z"
