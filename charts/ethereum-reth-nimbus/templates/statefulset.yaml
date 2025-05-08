@@ -415,7 +415,7 @@ spec:
               exec /ethereum-metrics-exporter \
                 --consensus-url=http://localhost:9545 \
                 --execution-url=http://localhost:8545 \
-                --execution-modules="admin,eth,net,web3,txpool" \  #! Remove admin, due to it failes with current reth
+                --execution-modules="eth,net,web3,txpool" \  #! Remove admin, due to it failes with current reth
                 --metrics-port=7302
           ports:
             - containerPort: 7302
