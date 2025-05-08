@@ -14,7 +14,7 @@ spec:
       port: 8545
       protocol: TCP
       targetPort: eth1-rpc
-    - name: eth1-rpc
+    - name: eth1-ws
       port: 8546
       protocol: TCP
       targetPort: eth1-ws
