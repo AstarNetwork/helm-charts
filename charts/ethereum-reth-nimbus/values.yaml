@@ -114,7 +114,7 @@ fullnameOverride: node
 # @default -- See `values.yaml`
 securityContext:
   runAsGroup: 1001
-  runAsNonRoot: true
+  # runAsNonRoot: true   #! todo
   runAsUser: 1001
   fsGroupChangePolicy: "OnRootMismatch"
 
