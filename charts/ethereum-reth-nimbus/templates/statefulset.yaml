@@ -159,7 +159,7 @@ spec:
             - name: ARGOCD_INSTANCE_NAME
               valueFrom:
                 fieldRef:
-                  fieldPath: metadata.labels["app.kubernetes.io/instance"]
+                  fieldPath: metadata.labels['app.kubernetes.io/instance']
           command:
             - /bin/sh
             - -exuc
