@@ -267,22 +267,6 @@ spec:
 
               kubectl annotate pod $HOSTNAME external-ip=$EXTERNAL_IP --overwrite;
 
-        - name: replicas-peering
-          image: alpine/k8s:1.30.4
-          command:
-            - sh
-            - -exuc
-            - |
-              #* Get enodes of its replicas to peer with
-              RETH_TRUSTED_PEERS=$(curl -s -X POST -H "Content-Type: application/json" \
-                      --data '{"jsonrpc":"2.0","method":"admin_nodeInfo","params":[],"id":1}' \
-                      "http://node-[0-{{.Values.replicas}}].node:8545" | jq -r .result.enode | paste -sd ",")
-
-              #* Annotate the pod with static peers info, to have it in ENV var in the container
-              kubectl annotate pod $HOSTNAME reth-trusted-peers=$RETH_TRUSTED_PEERS --overwrite;
-          securityContext:
-            {{- toYaml .Values.containerSecurityContext | nindent 12 }}
-
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
@@ -296,10 +280,6 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.annotations['external-ip']
-            - name: RETH_TRUSTED_PEERS
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.annotations['reth-trusted-peers']
             - name: APP_HOME
               value: "{{$dataPath}}"
           command:
@@ -328,7 +308,6 @@ spec:
             - --log.file.max-files=0
             - --nat=extip:$(EXTERNAL_IP)
             - --p2p-secret-key=$(APP_HOME)/reth_p2p_key_$(EXTERNAL_IP)
-            - --trusted-peers=$(RETH_TRUSTED_PEERS)
           ports:
             - containerPort: 8545
               name: eth1-rpc
@@ -436,7 +415,7 @@ spec:
               exec /ethereum-metrics-exporter \
                 --consensus-url=http://localhost:9545 \
                 --execution-url=http://localhost:8545 \
-                --execution-modules="eth,net,web3,txpool" \  #! Remove admin, due to it failes with current reth
+                --execution-modules="admin,eth,net,web3,txpool" \  #! Remove admin, due to it failes with current reth
                 --metrics-port=7302
           ports:
             - containerPort: 7302
