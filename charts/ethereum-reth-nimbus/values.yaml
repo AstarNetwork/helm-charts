@@ -173,6 +173,7 @@ pullPolicy: IfNotPresent
 podManagementPolicy: Parallel
 
 rbac:
+  create: true
   rules:
     - apiGroups: ['*']
       resources:
