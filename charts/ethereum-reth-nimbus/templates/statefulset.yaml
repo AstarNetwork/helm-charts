@@ -129,7 +129,8 @@ spec:
               mountPath: {{$dataPath}}
 
         - name: nimbus-trusted-sync
-          image: alpine:latest
+          image: {{.Values.nimbus.image.repository}}:{{.Values.nimbus.image.tag}}
+          imagePullPolicy: {{ .Values.pullPolicy }}
           env:
             - name: APP_HOME
               value: {{$dataPath}}
