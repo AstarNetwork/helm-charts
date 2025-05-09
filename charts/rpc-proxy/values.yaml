@@ -52,6 +52,14 @@ ingress:
   #    hosts:
   #      - chart-example.local
 
+vmPodScrape:
+  # -- If true, a ServiceMonitor CRD is created for a prometheus operator
+  # https://github.com/coreos/prometheus-operator
+  enabled: true
+  #* region to use in region_pod label
+  #* This is used to identify the region of the pod in the metrics
+  region: ""
+
 # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 imagePullSecrets: []
 # This is to override the chart name.

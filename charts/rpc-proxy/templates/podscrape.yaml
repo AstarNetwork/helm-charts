@@ -16,7 +16,7 @@ spec:
           source_labels: ["pod"]
           target_label: "region_pod"
           regex: "(.+)"
-          replacement: "{{(split "-" .cluster.argoCluster)._0}}-$1"
+          replacement: "{{.Values.vmPodScrape.region}}-$1"
         - target_label: service
           replacement: l1-node
     - targetPort: 9545 #dugtrio
@@ -28,6 +28,6 @@ spec:
           source_labels: ["pod"]
           target_label: "region_pod"
           regex: "(.+)"
-          replacement: "{{(split "-" .cluster.argoCluster)._0}}-$1"
+          replacement: "{{.Values.vmPodScrape.region}}-$1"
         - target_label: service
           replacement: l1-node
