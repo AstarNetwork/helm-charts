@@ -101,6 +101,25 @@ spec:
               mountPath: {{$dataPath}}
       {{- end }}
 
+        - name: init-dirs
+          image: alpine:latest
+          env:
+            - name: APP_HOME
+              value: {{$dataPath}}
+          command:
+            - sh
+            - -exuc
+            - |
+              if [[ ! -d $APP_HOME/erigon ]]; then
+                mkdir -p $APP_HOME/erigon
+                chown -R {{ .Values.securityContext.runAsUser }}:{{ .Values.securityContext.runAsGroup }} $APP_HOME
+              fi
+          securityContext:
+            runAsUser: 0
+          volumeMounts:
+            - name: storage
+              mountPath: {{$dataPath}}
+
         - name: create-p2p-service
           image: alpine/k8s:1.30.4
           env:
