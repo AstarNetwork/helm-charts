@@ -17,3 +17,7 @@
 # {{- if gt (len .Values.p2pNlb.eIPs) 0}}
 #   {{ required "p2pNlb.eIPs must be >= replicas." (ge (len .Values.p2pNlb.eIPs) .Values.replicas) }}
 # {{- end }}
+
+# {{- if len .Values.vmPodScrape.enabled }}
+#   {{ required "vmPodScrape.region must be set." .Values.vmPodScrape.region }}
+# {{- end }}

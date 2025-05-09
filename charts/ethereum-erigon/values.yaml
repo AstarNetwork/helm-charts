@@ -135,7 +135,7 @@ vmPodScrape:
   enabled: true
   #* region to use in region_pod label
   #* This is used to identify the region of the pod in the metrics
-  region: apne1
+  region: ""
   # # -- Path to scrape
   # path: /debug/metrics/prometheus
   # # -- Alternative namespace for ServiceMonitor

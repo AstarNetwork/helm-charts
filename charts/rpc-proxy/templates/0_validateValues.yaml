@@ -1,0 +1,6 @@
+# {{- if gt .Values.replicas 1}}
+#   {{ required "HA redis must be configured" .Values.redis }}
+# {{- end }}
+
+# {{ required "proxyd.nodes must be added." .Values.proxyd.nodes }}
+# {{ required "dugtrio.nodes must be added." .Values.dugtrio.nodes }}
