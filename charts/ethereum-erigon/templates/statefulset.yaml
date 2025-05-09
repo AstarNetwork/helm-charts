@@ -265,7 +265,7 @@ spec:
             - --caplin.blobs-archive
             - --caplin.blobs-immediate-backfill
             - --caplin.blobs-no-pruning
-            - --caplin.checkpoint-sync-url=https://beaconstate-{{.Values.ethereumChain}}.chainsafe.io
+            # - --caplin.checkpoint-sync-url=https://beaconstate-{{.Values.ethereumChain}}.chainsafe.io
             - --beacon.api=beacon,builder,config,debug,events,node,validator,lighthouse
             - --beacon.api.addr=0.0.0.0
             - --beacon.api.port=9545
