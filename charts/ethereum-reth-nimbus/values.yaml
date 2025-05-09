@@ -1,7 +1,7 @@
 # -- Number of replicas
 replicas: 1
 
-ethereumChain: null
+ethereumChain: ""
 
 # -- Node selector for pods
 nodeSelector: {}
@@ -66,7 +66,7 @@ dataSnapshot:
   # -- Backup bucket prefix
   bucketPrefix: ""
   # IAM role to dowenload/upload data from/to S3
-  awsSnapshotIamRoleArn: null
+  awsSnapshotIamRoleArn: ""
 
   schedule: "0 0 * * *"
   # -- Backup retention
@@ -80,9 +80,11 @@ p2pNlb:
   #* AWS EIP to attach to NLB exposing p2p ports
   eIPs: []
   #* Security group to attach to NLB exposing p2p ports
-  securityGroup: AWS-Security-Group
+  securityGroup: ""
   #* Subnet name without az name, subnets should be named in the following way: `${publicSubnetPrefix}-${azName}`.
-  subnetPrefix: AWS-Subnet-Prefix
+  subnetPrefix: ""
+
+ethereumClients: reth-nimbus
 
 ingress:
   # -- Ingress resource for the HTTP API

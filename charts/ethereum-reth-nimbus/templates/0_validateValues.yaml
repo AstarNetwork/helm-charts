@@ -1,4 +1,5 @@
 # {{ required "ethereumChain must be specified" .Values.ethereumChain }}
+# {{ required "ethereumClients must be specified" .Values.ethereumClients }}
 
 # {{- if or .Values.dataSnapshot.restoreData .Values.dataSnapshot.backupData}}
 #   {{ required "s3BucketName must be specified" .Values.dataSnapshot.s3BucketName }}
@@ -6,8 +7,10 @@
 #   {{ required "awsSnapshotIamRoleArn must be specified" .Values.dataSnapshot.awsSnapshotIamRoleArn }}
 # {{- end }}
 
-# Check 
-#EIps == replicas
-# Subnet prefix 
-#
-#
+# Check p2pNlb values
+# {{ required "p2pNlb.securityGroup must be specified" .Values.p2pNlb.securityGroup }}
+# {{ required "p2pNlb.subnetPrefix must be specified" .Values.p2pNlb.subnetPrefix }}
+
+# {{- if gt (len .Values.p2pNlb.eIPs) 0}}
+#   {{ required "p2pNlb.eIPs must be >= replicas." (ge (len .Values.p2pNlb.eIPs) .Values.replicas) }}
+# {{- end }}
