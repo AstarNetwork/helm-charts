@@ -2,6 +2,20 @@ apiVersion: v1
 entries:
   ethereum-erigon:
   - apiVersion: v2
+    created: "2025-05-09T03:30:08.319666333Z"
+    description: 'Ethereum node with reth and nimbus '
+    digest: cb6b09e0fb6f1b9701f49eed6cb092e26a779bcd895dd3e6f651f208999c48c3
+    home: https://soneium.com
+    maintainers:
+    - name: vlad
+    name: ethereum-erigon
+    sources:
+    - https://github.com/soneium
+    type: application
+    urls:
+    - https://github.com/AstarNetwork/helm-charts/releases/download/ethereum-erigon-0.0.31/ethereum-erigon-0.0.31.tgz
+    version: 0.0.31
+  - apiVersion: v2
     created: "2025-05-09T01:44:06.520180989Z"
     description: 'Ethereum node with reth and nimbus '
     digest: 30ae8ae22e7209323042c8236d33b75b39e4cd0dfceb41a2d09bfa1084aa586d
@@ -44,6 +58,20 @@ entries:
     - https://github.com/AstarNetwork/helm-charts/releases/download/ethereum-erigon-0.0.28/ethereum-erigon-0.0.28.tgz
     version: 0.0.28
   ethereum-reth-nimbus:
+  - apiVersion: v2
+    created: "2025-05-09T03:30:08.444813158Z"
+    description: 'Ethereum node with reth and nimbus '
+    digest: 16444577ac139ae0dd619e572577710a1dcf4b9b5e1de3a3d16d4438730895bf
+    home: https://soneium.com
+    maintainers:
+    - name: vlad
+    name: ethereum-reth-nimbus
+    sources:
+    - https://github.com/soneium
+    type: application
+    urls:
+    - https://github.com/AstarNetwork/helm-charts/releases/download/ethereum-reth-nimbus-0.0.29/ethereum-reth-nimbus-0.0.29.tgz
+    version: 0.0.29
   - apiVersion: v2
     created: "2025-05-09T00:13:47.55544151Z"
     description: 'Ethereum node with reth and nimbus '
@@ -447,6 +475,17 @@ entries:
     urls:
     - https://github.com/AstarNetwork/helm-charts/releases/download/opnode-0.1.0/opnode-0.1.0.tgz
     version: 0.1.0
+  rpc-proxy:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2025-05-09T03:30:08.597308279Z"
+    description: A Helm chart for Kubernetes
+    digest: 24a1027fbe27d28a5e16aba0fe34908e92c2c782b6eb63cc24f8700e90bcb798
+    name: rpc-proxy
+    type: application
+    urls:
+    - https://github.com/AstarNetwork/helm-charts/releases/download/rpc-proxy-0.1.0/rpc-proxy-0.1.0.tgz
+    version: 0.1.0
   uni-helm:
   - apiVersion: v2
     created: "2024-11-15T03:58:35.901599683Z"
@@ -536,4 +575,4 @@ entries:
     urls:
     - https://github.com/AstarNetwork/helm-charts/releases/download/universal-helm-0.6.11/universal-helm-0.6.11.tgz
     version: 0.6.11
-generated: "2025-05-09T01:44:06.520258944Z"
+generated: "2025-05-09T03:30:08.597432791Z"
