@@ -25,7 +25,7 @@ erigon:
       memory: 24Gi
 
 ethereumExporter:
-  enabled: true
+  enabled: false
   image:
     repository: ethpandaops/ethereum-metrics-exporter
     tag: 0.27.1-debian
@@ -136,24 +136,7 @@ vmPodScrape:
   #* region to use in region_pod label
   #* This is used to identify the region of the pod in the metrics
   region: ""
-  # # -- Path to scrape
-  # path: /debug/metrics/prometheus
-  # # -- Alternative namespace for ServiceMonitor
-  # namespace: null
-  # # -- Additional ServiceMonitor labels
-  # labels: {}
-  # # -- Additional ServiceMonitor annotations
-  # annotations: {}
-  # # -- ServiceMonitor scrape interval
-  # interval: 1m
-  # # -- ServiceMonitor scheme
-  # scheme: http
-  # # -- ServiceMonitor TLS configuration
-  # tlsConfig: {}
-  # # -- ServiceMonitor scrape timeout
-  # scrapeTimeout: 30s
-  # # -- ServiceMonitor relabelings
-  # relabelings: []
+
 pullPolicy: IfNotPresent
 # -- Pod management policy
 podManagementPolicy: Parallel
@@ -218,100 +201,3 @@ extraEnv: []
 
 # -- Additional env variables injected via a created secret
 secretEnv: {}
-# MY_PASSWORD: supersecret
-
-# initChownData:
-#   # -- Init container to set the correct permissions to access data directories
-#   enabled: true
-#   image:
-#     # -- Container repository
-#     repository: busybox
-#     # -- Container tag
-#     tag: 1.34.0
-#     # -- Container pull policy
-#     pullPolicy: IfNotPresent
-#   # -- Resource requests and limits
-#   resources: {}
-#   #  limits:
-#   #    cpu: 100m
-#   #    memory: 128Mi
-#   #  requests:
-#   #    cpu: 100m
-#   #    memory: 128Mi
-
-
-
-# -- Template used for the default command
-# @default -- See `values.yaml`
-# defaultCommandTemplate: |
-#   - sh
-#   - -ac
-#   - >
-#   {{- if .Values.p2pNodePort.enabled }}
-#     . /env/init-nodeport;
-#   {{- end }}
-#     exec /usr/local/bin/reth node
-#     --datadir=/data
-#     --config=/data/config.toml
-#   {{- if .Values.p2pNodePort.enabled }}
-#     {{- if not (contains "--nat=" (.Values.extraArgs | join ",")) }}
-#     --nat=extip:$EXTERNAL_IP
-#     {{- end }}
-#     {{- if not (contains "--port=" (.Values.extraArgs | join ",")) }}
-#     --port=$EXTERNAL_PORT
-#     {{- end }}
-#   {{- else }}
-#     {{- if not (contains "--nat=" (.Values.extraArgs | join ",")) }}
-#     --nat=extip:$(POD_IP)
-#     {{- end }}
-#     {{- if not (contains "--port=" (.Values.extraArgs | join ",")) }}
-#     --port={{ include "reth.p2pPort" . }}
-#     {{- end }}
-#   {{- end }}
-#     --http
-#     --http.addr=0.0.0.0
-#     --http.port={{ .Values.httpPort }}
-#     --http.corsdomain=*
-#     --ws
-#     --ws.addr=0.0.0.0
-#     --ws.port={{ .Values.wsPort }}
-#     --ws.origins=*
-#     --authrpc.jwtsecret=/data/jwt.hex
-#     --authrpc.addr=0.0.0.0
-#     --authrpc.port={{ .Values.authPort }}
-#     --log.file.directory=/data/logs
-#   {{- if .Values.metricsPort }}
-#     --metrics=0.0.0.0:{{ .Values.metricsPort }}
-#   {{- end }}
-#   {{- range .Values.extraArgs }}
-#     {{ tpl . $ }}
-#   {{- end }}
-
-# # -- Legacy way of overwriting the default command. You may prefer to change defaultCommandTemplate instead.
-# customCommand: []
-
-# When p2pNodePort is enabled, your P2P port will be exposed via service type NodePort.
-# This is useful if you want to expose and announce your node to the Internet.
-# Limitation: You can only one have one replica when exposing via NodePort.
-#             Check the chart README.md for more details
-# p2pNodePort:
-#   # -- Expose P2P port via NodePort
-#   enabled: false
-#   # -- NodePort to be used
-#   port: 31000
-#   initContainer:
-#     image:
-#       # -- Container image to fetch nodeport information
-#       repository: lachlanevenson/k8s-kubectl
-#       # -- Container tag
-#       tag: v1.25.4
-#       # -- Container pull policy
-#       pullPolicy: IfNotPresent
-#   portForwardContainer:
-#     image:
-#       # -- Container image for the port forwarder
-#       repository: alpine/socat
-#       # -- Container tag
-#       tag: latest
-#       # -- Container pull policy
-#       pullPolicy: IfNotPresent
