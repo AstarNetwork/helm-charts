@@ -12,33 +12,17 @@ persistence:
   size: ""
   storageClassName: lvm-localpv
 
-reth:
+erigon:
   image:
-    repository: ghcr.io/paradigmxyz/reth
-    # -- Nimbus image tag
-    tag: v1.3.12
+    repository: erigontech/erigon
+    tag: v3.0.3
   resources:
-    # -- Nimbus resource requests and limits
     requests:
       cpu: 2
       memory: 16Gi
     limits:
       # cpu: 500m
       memory: 24Gi
-
-nimbus:
-  image:
-    repository: statusim/nimbus-eth2
-    # -- Nimbus image tag
-    tag: amd64-v25.4.0
-  resources:
-    # -- Nimbus resource requests and limits
-    requests:
-      cpu: 1
-      memory: 8Gi
-    limits:
-      # cpu: 500m
-      memory: 12Gi
 
 ethereumExporter:
   enabled: true
@@ -84,7 +68,7 @@ p2pNlb:
   #* Subnet name without az name, subnets should be named in the following way: `${publicSubnetPrefix}-${azName}`.
   subnetPrefix: ""
 
-ethereumClients: reth-nimbus
+ethereumClients: erigon
 
 ingress:
   # -- Ingress resource for the HTTP API
