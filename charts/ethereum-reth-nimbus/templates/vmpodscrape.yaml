@@ -2,7 +2,7 @@
 kind: VMPodScrape
 apiVersion: operator.victoriametrics.com/v1beta1
 metadata:
-  name: node-metrics
+  name: {{ include "node.fullname" . }}
 spec:
   selector:
     matchLabels:

@@ -1,5 +1,4 @@
 {{- $dataPath := "/data" }}
-{{- $resticRepo := printf "s3:https://s3.amazonaws.com/%s/%s/%s" .Values.dataSnapshot.bucketName .Values.ethereumChain .Values.ethereumClients}}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -61,7 +60,7 @@ spec:
         {{- end }}
       terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
       initContainers:
-      {{- if .Values.dataSnapshot.restoreData | default false}}
+      {{- if .Values.dataSnapshot.restoreData }}
         - name: restore-from-backup
           image: restic/restic:latest
           env:
@@ -74,7 +73,7 @@ spec:
             - name: RESTIC_PROGRESS_FPS
               value: "0.016666"
             - name: RESTIC_REPOSITORY
-              value: "{{$resticRepo}}"
+              value: {{ include "node.resticS3Repo" .}}
             - name: RESTIC_HOST
               value: "{{.Values.ethereumClients}}"
           command:
@@ -325,6 +324,11 @@ spec:
           livenessProbe:
             tcpSocket:
               port: 8545
+          startupProbe:
+            tcpSocket:
+              port: 8545
+            periodSeconds: 30
+            failureThreshold: 20
           resources:
             {{- toYaml .Values.reth.resources | nindent 12 }}
           lifecycle:
@@ -433,7 +437,9 @@ spec:
         {{ toYaml .Values.extraVolumes | nindent 8}}
       {{- end }}
   volumeClaimTemplates:
-    - metadata:
+    - apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
         name: storage
       spec:
         accessModes: ["ReadWriteOnce"]
