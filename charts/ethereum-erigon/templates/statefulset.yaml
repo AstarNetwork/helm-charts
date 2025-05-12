@@ -321,7 +321,7 @@ spec:
             tcpSocket:
               port: 8545
             periodSeconds: 30
-            failureThreshold: 20
+            failureThreshold: 40     #* Up to 20 minutes to startup
           resources:
             {{- toYaml .Values.erigon.resources | nindent 12 }}
           lifecycle:
