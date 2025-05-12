@@ -316,8 +316,7 @@ spec:
           livenessProbe:
             tcpSocket:
               port: 8545
-          readinessProbe:
-            initialDelaySeconds: 60
+          startupProbe:
             tcpSocket:
               port: 8545
             periodSeconds: 30
