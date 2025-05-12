@@ -59,3 +59,10 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+S3 bucket name and path to store/get restic repo
+*/}}
+{{- define "node.resticS3Repo" -}}
+{{- printf "s3:https://s3.amazonaws.com/%s/%s/%s" .Values.dataSnapshot.bucketName .Values.ethereumChain .Values.ethereumClients }}
+{{- end }}

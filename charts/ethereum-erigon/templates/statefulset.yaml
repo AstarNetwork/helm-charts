@@ -1,5 +1,4 @@
 {{- $dataPath := "/data" }}
-{{- $resticRepo := printf "s3:https://s3.amazonaws.com/%s/%s/%s" .Values.dataSnapshot.bucketName .Values.ethereumChain .Values.ethereumClients}}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -74,7 +73,7 @@ spec:
             - name: RESTIC_PROGRESS_FPS
               value: "0.016666"
             - name: RESTIC_REPOSITORY
-              value: "{{$resticRepo}}"
+              value: {{ include "node.resticS3Repo" .}}
             - name: RESTIC_HOST
               value: "{{.Values.ethereumClients}}"
           command:

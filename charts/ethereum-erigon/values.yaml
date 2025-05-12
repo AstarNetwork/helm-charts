@@ -42,20 +42,19 @@ dataSnapshot:
   restoreData: false
   # Creates cronjob to schedule data abackups to S3
   backupData: false
-
+  sourcePvcName: storage-node-0
+  sourcePod: node-0
   # -- Backup bucket name
   bucketName: ""
   # -- Backup bucket region
   bucketRegion: ""
-  # -- Backup bucket prefix
-  bucketPrefix: ""
   # IAM role to dowenload/upload data from/to S3
   awsSnapshotIamRoleArn: ""
 
-  schedule: "0 0 * * *"
+  backupSchedule: "0 0 * * *"
   # -- Backup retention
-  retention: 7
-
+  backupRetainDays: 7
+  activeDeadlineHours: 8
 # -- Pod annotations
 podAnnotations:
   karpenter.sh/do-not-disrupt: "true"
@@ -152,6 +151,9 @@ rbac:
       resources:
         - pods
       verbs: ['*']
+    - apiGroups: ["*"]
+      resources: ["volumesnapshots"] # pvc, volumesnapshot, job
+      verbs: ["*"]
 
 # -- How long to wait until the pod is forcefully terminated
 terminationGracePeriodSeconds: 90
