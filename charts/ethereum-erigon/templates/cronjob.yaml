@@ -103,7 +103,7 @@ spec:
                   done
 
                   #* VolumeSnapshot is also LVM volume snapshot name
-                  SNAP_UID=$($KUBECTL -n {{.Release.Release.namespace}} get volumesnapshot $SNAP_NAME -ojson | jq -r '.metadata.uid')
+                  SNAP_UID=$($KUBECTL -n {{.Release.namespace}} get volumesnapshot $SNAP_NAME -ojson | jq -r '.metadata.uid')
 
                   #* Mount the snapshot
                   nsenter -m/proc/1/ns/mnt -- mkdir -p /mnt/snapshot/data
