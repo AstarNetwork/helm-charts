@@ -2,6 +2,20 @@ apiVersion: v1
 entries:
   ethereum-erigon:
   - apiVersion: v2
+    created: "2025-05-12T09:23:02.004624958Z"
+    description: 'Ethereum node with reth and nimbus '
+    digest: cb439f96bc06fc76342051f16f03debbbfaa737ca46e1b7796c34a5d88d65429
+    home: https://soneium.com
+    maintainers:
+    - name: vlad
+    name: ethereum-erigon
+    sources:
+    - https://github.com/soneium
+    type: application
+    urls:
+    - https://github.com/AstarNetwork/helm-charts/releases/download/ethereum-erigon-0.0.45/ethereum-erigon-0.0.45.tgz
+    version: 0.0.45
+  - apiVersion: v2
     created: "2025-05-12T08:39:27.65346798Z"
     description: 'Ethereum node with reth and nimbus '
     digest: 4abea91f3cf4c6581c15f47ca69c9fbe95daac9ea2ee42b842b94f9fb5a96d90
@@ -240,6 +254,20 @@ entries:
     - https://github.com/AstarNetwork/helm-charts/releases/download/ethereum-erigon-0.0.28/ethereum-erigon-0.0.28.tgz
     version: 0.0.28
   ethereum-reth-nimbus:
+  - apiVersion: v2
+    created: "2025-05-12T09:23:02.200478775Z"
+    description: 'Ethereum node with reth and nimbus '
+    digest: 8815950010c28fd05ae8a3171add6030a33766c4865030f41bb847e0f021b9fe
+    home: https://soneium.com
+    maintainers:
+    - name: vlad
+    name: ethereum-reth-nimbus
+    sources:
+    - https://github.com/soneium
+    type: application
+    urls:
+    - https://github.com/AstarNetwork/helm-charts/releases/download/ethereum-reth-nimbus-0.0.45/ethereum-reth-nimbus-0.0.45.tgz
+    version: 0.0.45
   - apiVersion: v2
     created: "2025-05-12T09:18:45.489315587Z"
     description: 'Ethereum node with reth and nimbus '
@@ -855,4 +883,4 @@ entries:
     urls:
     - https://github.com/AstarNetwork/helm-charts/releases/download/universal-helm-0.6.11/universal-helm-0.6.11.tgz
     version: 0.6.11
-generated: "2025-05-12T09:18:45.489543582Z"
+generated: "2025-05-12T09:23:02.200831223Z"
