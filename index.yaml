@@ -2,6 +2,20 @@ apiVersion: v1
 entries:
   ethereum-erigon:
   - apiVersion: v2
+    created: "2025-05-12T04:24:57.095583731Z"
+    description: 'Ethereum node with reth and nimbus '
+    digest: 04f480e9ec6ffba0c92d27d8954075076dd01a26d848a565707d366acb864af5
+    home: https://soneium.com
+    maintainers:
+    - name: vlad
+    name: ethereum-erigon
+    sources:
+    - https://github.com/soneium
+    type: application
+    urls:
+    - https://github.com/AstarNetwork/helm-charts/releases/download/ethereum-erigon-0.0.36/ethereum-erigon-0.0.36.tgz
+    version: 0.0.36
+  - apiVersion: v2
     created: "2025-05-12T04:06:52.517736684Z"
     description: 'Ethereum node with reth and nimbus '
     digest: 1517f60491b894a784cecdf6307368fecf8293253fe24b4578ae6d1c617d35eb
@@ -673,4 +687,4 @@ entries:
     urls:
     - https://github.com/AstarNetwork/helm-charts/releases/download/universal-helm-0.6.11/universal-helm-0.6.11.tgz
     version: 0.6.11
-generated: "2025-05-12T04:06:52.517836712Z"
+generated: "2025-05-12T04:24:57.095693626Z"
