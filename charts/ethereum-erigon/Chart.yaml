@@ -6,6 +6,6 @@ home: https://soneium.com
 sources:
   - https://github.com/soneium
 type: application
-version: 0.0.39
+version: 0.0.40
 maintainers:
   - name: vlad

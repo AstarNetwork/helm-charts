@@ -316,6 +316,12 @@ spec:
           livenessProbe:
             tcpSocket:
               port: 8545
+          readinessProbe:
+            initialDelaySeconds: 60
+            tcpSocket:
+              port: 8545
+            periodSeconds: 30
+            failureThreshold: 20
           resources:
             {{- toYaml .Values.erigon.resources | nindent 12 }}
           lifecycle:
