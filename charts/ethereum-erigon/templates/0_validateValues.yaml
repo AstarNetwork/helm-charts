@@ -1,5 +1,5 @@
 # {{ required "ethereumChain must be specified" .Values.ethereumChain }}
-# {{ required "ethereumClients must be specified" .Values.ethereumClients }}
+# {{ required "dataSnapshot.ethereumClients must be specified" .Values.dataSnapshot.ethereumClients }}
 
 # {{- if or .Values.dataSnapshot.restoreData .Values.dataSnapshot.backupData}}
 #   {{ required "dataSnapshot.bucketName must be specified" .Values.dataSnapshot.bucketName }}
