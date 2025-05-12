@@ -9,7 +9,7 @@ spec:
       {{- include "node.selectorLabels" . | nindent 6 }}
   podMetricsEndpoints:
     - targetPort: 7300 #erigon
-      path: /
+      path: /debug/metrics/prometheus
       scheme: http
       metricRelabelConfigs:
         #* Add label region_pod
@@ -20,6 +20,7 @@ spec:
           replacement: "{{.Values.vmPodScrape.region}}-$1"
         - target_label: service
           replacement: l1-node
+  {{- if .Values.ethereumExporter.enabled }}
     - targetPort: 7302 #exporter
       path: /metrics
       scheme: http
@@ -32,4 +33,5 @@ spec:
           replacement: "{{.Values.vmPodScrape.region}}-$1"
         - target_label: service
           replacement: l1-node
+  {{- end }}
 {{- end }}

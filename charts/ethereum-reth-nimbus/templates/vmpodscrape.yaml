@@ -32,6 +32,7 @@ spec:
           replacement: "{{.Values.vmPodScrape.region}}-$1"
         - target_label: service
           replacement: l1-node
+  {{- if .Values.ethereumExporter.enabled }}
     - targetPort: 7302 #exporter
       path: /metrics
       scheme: http
@@ -44,4 +45,5 @@ spec:
           replacement: "{{.Values.vmPodScrape.region}}-$1"
         - target_label: service
           replacement: l1-node
+  {{- end }}
 {{- end }}
