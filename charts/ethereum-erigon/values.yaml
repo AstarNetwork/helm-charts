@@ -55,6 +55,8 @@ dataSnapshot:
   # -- Backup retention
   backupRetainDays: 7
   activeDeadlineHours: 8
+  ethereumClients: erigon
+
 # -- Pod annotations
 podAnnotations:
   karpenter.sh/do-not-disrupt: "true"
@@ -66,8 +68,6 @@ p2pNlb:
   securityGroup: ""
   #* Subnet name without az name, subnets should be named in the following way: `${publicSubnetPrefix}-${azName}`.
   subnetPrefix: ""
-
-ethereumClients: erigon
 
 ingress:
   # -- Ingress resource for the HTTP API

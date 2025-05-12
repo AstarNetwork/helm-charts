@@ -129,7 +129,7 @@ spec:
                 - name: RESTIC_REPOSITORY
                   value: {{ include "node.resticS3Repo" .}}
                 - name: RESTIC_HOST
-                  value: "{{.Values.ethereumClients}}"
+                  value: "{{.Values.dataSnapshot.ethereumClients}}"
                 - name: MAX_BLOCK_AGE_SEC
                   value: "3600"             #* 2h old
               command:

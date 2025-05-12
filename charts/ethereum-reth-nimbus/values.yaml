@@ -58,19 +58,20 @@ dataSnapshot:
   restoreData: false
   # Creates cronjob to schedule data abackups to S3
   backupData: false
-
+  sourcePvcName: storage-node-0
+  sourcePod: node-0
   # -- Backup bucket name
   bucketName: ""
   # -- Backup bucket region
   bucketRegion: ""
-  # -- Backup bucket prefix
-  bucketPrefix: ""
   # IAM role to dowenload/upload data from/to S3
   awsSnapshotIamRoleArn: ""
 
-  schedule: "0 0 * * *"
+  backupSchedule: "0 0 * * *"
   # -- Backup retention
-  retention: 7
+  backupRetainDays: 7
+  activeDeadlineHours: 8
+  ethereumClients: reth-nimbus
 
 # -- Pod annotations
 podAnnotations:
@@ -83,8 +84,6 @@ p2pNlb:
   securityGroup: ""
   #* Subnet name without az name, subnets should be named in the following way: `${publicSubnetPrefix}-${azName}`.
   subnetPrefix: ""
-
-ethereumClients: reth-nimbus
 
 ingress:
   # -- Ingress resource for the HTTP API
