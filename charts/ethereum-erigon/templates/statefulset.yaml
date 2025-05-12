@@ -60,7 +60,7 @@ spec:
         {{- end }}
       terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
       initContainers:
-      {{- if .Values.dataSnapshot.restoreData | default false}}
+      {{- if .Values.dataSnapshot.restoreData }}
         - name: restore-from-backup
           image: restic/restic:latest
           env:
@@ -133,7 +133,7 @@ spec:
               SVC_NAME=$HOSTNAME-p2p
 
               #* Delete LB service if exist
-              kubectl -n {{.Release.Namespace}} delete svc --wait=true $SVC_NAME || true
+              kubectl -n {{.Release.Release.namespace}} delete svc --wait=true $SVC_NAME || true
 
               TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
               CURRENT_AZ=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/placement/availability-zone)
@@ -201,7 +201,7 @@ spec:
               EOF
 
               cat $SVC_YAML
-              kubectl -n {{.Release.Namespace}} apply -f $SVC_YAML
+              kubectl -n {{.Release.Release.namespace}} apply -f $SVC_YAML
 
               #* if EIPs are not provided, get the IP resolving the LB's DNS name
               {{- if eq (len .Values.p2pNlb.eIPs) 0 }}
@@ -365,7 +365,9 @@ spec:
         {{ toYaml .Values.extraVolumes | nindent 8}}
       {{- end }}
   volumeClaimTemplates:
-    - metadata:
+    - apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
         name: storage
       spec:
         accessModes: ["ReadWriteOnce"]

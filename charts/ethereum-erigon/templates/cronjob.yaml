@@ -88,11 +88,11 @@ spec:
                   EOF
 
                   cat $SNAP_YAML
-                  $KUBECTL -n {{.namespace}} apply -f $SNAP_YAML
+                  $KUBECTL -n {{.Release.namespace}} apply -f $SNAP_YAML
 
                   #* Wait for the snapshot to be ready
                   for i in $(seq 1 12); do
-                    SNAP_STATUS=$($KUBECTL -n {{.namespace}} get volumesnapshot $SNAP_NAME -ojson | jq -r '.status.readyToUse')
+                    SNAP_STATUS=$($KUBECTL -n {{.Release.namespace}} get volumesnapshot $SNAP_NAME -ojson | jq -r '.status.readyToUse')
                     if [ "$SNAP_STATUS" = "true" ]; then
                       echo "Snapshot is ready"
                       break
@@ -103,7 +103,7 @@ spec:
                   done
 
                   #* VolumeSnapshot is also LVM volume snapshot name
-                  SNAP_UID=$($KUBECTL -n {{.Release.namespace}} get volumesnapshot $SNAP_NAME -ojson | jq -r '.metadata.uid')
+                  SNAP_UID=$($KUBECTL -n {{.Release.Release.namespace}} get volumesnapshot $SNAP_NAME -ojson | jq -r '.metadata.uid')
 
                   #* Mount the snapshot
                   nsenter -m/proc/1/ns/mnt -- mkdir -p /mnt/snapshot/data
@@ -164,7 +164,7 @@ spec:
                   KUBECTL="/tmp/kubectl"
                   curl -Lo $KUBECTL https://dl.k8s.io/release/v1.31.0/bin/linux/amd64/kubectl
                   chmod a+x $KUBECTL
-                  $KUBECTL -n {{.namespace}} delete volumesnapshot $SNAP_NAME
+                  $KUBECTL -n {{.Release.namespace}} delete volumesnapshot $SNAP_NAME
               resources:
                 requests:
                   cpu: 1
