@@ -167,6 +167,10 @@ rbac:
       resources:
         - pods
       verbs: ['*']
+    - apiGroups: ["*"]
+      resources: ["volumesnapshots"] # pvc, volumesnapshot, job
+      verbs: ["*"]
+
 
 # -- How long to wait until the pod is forcefully terminated
 terminationGracePeriodSeconds: 90
