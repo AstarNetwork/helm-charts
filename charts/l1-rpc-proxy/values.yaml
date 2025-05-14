@@ -1,6 +1,6 @@
 #! To have >1 replicas, need to have a HA redis to share the state between replicas
 replicas: 1
-redis: rrrrrrrr
+redis: ""
 
 dugtrio:
 
@@ -68,11 +68,12 @@ vmPodScrape:
   #* This is used to identify the region of the pod in the metrics
   region: ""
 
+fullnameOverride: proxy
+
 # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 imagePullSecrets: []
 # This is to override the chart name.
 nameOverride: ""
-fullnameOverride: ""
 
 # This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
 serviceAccount:
