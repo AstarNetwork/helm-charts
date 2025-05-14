@@ -45,17 +45,17 @@ spec:
                 - key: app.kubernetes.io/instance
                   operator: In
                   values:
-                    - {{ include "node.fullname" . }}
+                    - {{ .Release.Name }}
               topologyKey: kubernetes.io/hostname
-        {{- with .Values.affinity }}
-        {{- toYaml . | nindent 8 }}
-        {{- end }}
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/instance: {{ .Release.Name }}
       tolerations:
         {{- with .Values.tolerations }}
-        {{- toYaml . | nindent 8 }}
-        {{- end }}
-      topologySpreadConstraints:
-        {{- with .Values.topologySpreadConstraints }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
       terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}

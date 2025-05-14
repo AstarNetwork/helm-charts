@@ -120,14 +120,6 @@ tolerations:
     operator: Equal
     value: "true"
 
-topologySpreadConstraints:
-  - labelSelector:
-      matchLabels:
-        statefulsetname: node
-    maxSkew: 1
-    topologyKey: topology.kubernetes.io/zone
-    whenUnsatisfiable: DoNotSchedule
-
 vmPodScrape:
   # -- If true, a ServiceMonitor CRD is created for a prometheus operator
   # https://github.com/coreos/prometheus-operator
@@ -157,8 +149,6 @@ rbac:
 
 # -- How long to wait until the pod is forcefully terminated
 terminationGracePeriodSeconds: 90
-# -- Affinity configuration for pods
-affinity: {}
 
 # -- Pod labels
 podLabels: {}
