@@ -67,11 +67,11 @@ spec:
           livenessProbe:
             httpGet:
               path: /healthz
-              port: http
+              port: proxyd-http
           readinessProbe:
             httpGet:
               path: /healthz
-              port: http
+              port: proxyd-http
 
         - name: dugtrio
           {{- with .Values.securityContext }}
@@ -102,11 +102,11 @@ spec:
           livenessProbe:
             httpGet:
               path: /healthcheck
-              port: http
+              port: dugtrio-http
           readinessProbe:
             httpGet:
               path: /healthcheck
-              port: http
+              port: dugtrio-http
 
       volumes:
         - name: proxyd-toml
