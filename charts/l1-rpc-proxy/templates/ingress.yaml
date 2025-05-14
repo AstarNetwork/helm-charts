@@ -20,32 +20,33 @@ spec:
       - {{.Values.ingress.beaconRpcDNSName}}
   rules:
     - host: {{.Values.ingress.executionRpcDNSName}}
-      paths:
-        - backend:
-            service:
-              name: {{ include "rpc-proxy.fullname" . }}
-              port:
-                name: proxyd-http
-          path: /
-          pathType: Prefix
+      http:
+        paths:
+          - backend:
+              service:
+                name: {{ include "rpc-proxy.fullname" . }}
+                port:
+                  name: proxyd-http
+            path: /
+            pathType: Prefix
     - host: {{.Values.ingress.executionWsDNSName}}
       http:
         paths:
-        - backend:
-            service:
-              name: {{ include "rpc-proxy.fullname" . }}
-              port:
-                name: proxyd-ws
-          path: /
-          pathType: Prefix
+          - backend:
+              service:
+                name: {{ include "rpc-proxy.fullname" . }}
+                port:
+                  name: proxyd-ws
+            path: /
+            pathType: Prefix
     - host: {{.Values.ingress.beaconRpcDNSName}}
       http:
         paths:
-        - backend:
-            service:
-              name: {{ include "rpc-proxy.fullname" . }}
-              port:
-                name: dugtrio-http
-          path: /
-          pathType: Prefix
+          - backend:
+              service:
+                name: {{ include "rpc-proxy.fullname" . }}
+                port:
+                  name: dugtrio-http
+            path: /
+            pathType: Prefix
 {{- end }}

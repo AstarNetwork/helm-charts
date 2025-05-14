@@ -1,5 +1,6 @@
 #! To have >1 replicas, need to have a HA redis to share the state between replicas
 replicas: 1
+redis: rrrrrrrr
 
 dugtrio:
 
