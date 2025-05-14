@@ -772,6 +772,17 @@ entries:
     urls:
     - https://github.com/AstarNetwork/helm-charts/releases/download/karpenter-0.36.0/karpenter-0.36.0.tgz
     version: 0.36.0
+  l1-rpc-proxy:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2025-05-14T05:10:37.105518148Z"
+    description: A Helm chart for Kubernetes
+    digest: c6bde57984fb82b3d8f0524fc7debd15e23af89cd506fe8596b5e026d5e43641
+    name: l1-rpc-proxy
+    type: application
+    urls:
+    - https://github.com/AstarNetwork/helm-charts/releases/download/l1-rpc-proxy-0.0.30/l1-rpc-proxy-0.0.30.tgz
+    version: 0.0.30
   opnode:
   - apiVersion: v2
     appVersion: 1.16.0
@@ -883,4 +894,4 @@ entries:
     urls:
     - https://github.com/AstarNetwork/helm-charts/releases/download/universal-helm-0.6.11/universal-helm-0.6.11.tgz
     version: 0.6.11
-generated: "2025-05-12T09:23:02.200831223Z"
+generated: "2025-05-14T05:10:37.105613727Z"
