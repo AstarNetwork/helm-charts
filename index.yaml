@@ -803,6 +803,16 @@ entries:
   l1-rpc-proxy:
   - apiVersion: v2
     appVersion: 1.16.0
+    created: "2025-05-14T05:48:40.728547287Z"
+    description: A Helm chart for Kubernetes
+    digest: df2a3cfa21dc0745f2f719e7cf524b52a82c1cd100cabb84ad3ce613d919198c
+    name: l1-rpc-proxy
+    type: application
+    urls:
+    - https://github.com/AstarNetwork/helm-charts/releases/download/l1-rpc-proxy-0.0.32/l1-rpc-proxy-0.0.32.tgz
+    version: 0.0.32
+  - apiVersion: v2
+    appVersion: 1.16.0
     created: "2025-05-14T05:40:46.780196552Z"
     description: A Helm chart for Kubernetes
     digest: 0c1088b0fb30ce5c352f7095d58d3a40fcf82ab153f62bf30645b1a9acf2e8b9
@@ -932,4 +942,4 @@ entries:
     urls:
     - https://github.com/AstarNetwork/helm-charts/releases/download/universal-helm-0.6.11/universal-helm-0.6.11.tgz
     version: 0.6.11
-generated: "2025-05-14T05:45:14.508873995Z"
+generated: "2025-05-14T05:48:40.728678363Z"
