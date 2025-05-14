@@ -18,7 +18,7 @@ spec:
           regex: "(.+)"
           replacement: "{{.Values.vmPodScrape.region}}-$1"
         - target_label: service
-          replacement: l1-node
+          replacement: l1-rpc-proxy
     - targetPort: 9545 #dugtrio
       path: /metrics
       scheme: http
@@ -30,4 +30,4 @@ spec:
           regex: "(.+)"
           replacement: "{{.Values.vmPodScrape.region}}-$1"
         - target_label: service
-          replacement: l1-node
+          replacement: l1-rpc-proxy

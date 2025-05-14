@@ -30,7 +30,7 @@ data:
     port = 7300
 
     [cache]
-    enabled = false
+    enabled = true
 
     [backend]
     max_response_size_bytes = 52428800 # 50 mb
@@ -39,25 +39,33 @@ data:
     response_timeout_seconds = 5
 
     [backends]
-    [backends.node0]
+    {{- $groupMain := list }}
+    {{- $groupMulticall := list }}
+    {{- with .Values.proxyd.nodes }}
+    {{- range . }}
+    {{- $name := regexReplaceAll "(http|https)://([^/]+).*" .url "${2}" | replace "." "_" | replace ":" "_"  }}
+
+    [backends.{{ $name }}]
     max_ws_conns = 2000
-    rpc_url = "http://node-0.node:8545"
-    ws_url = "ws://node-0.node:8546"
-    [backends.node1]
-    max_ws_conns = 2000
-    rpc_url = "http://node-1.node:8545"
-    ws_url = "ws://node-1.node:8546"
-    [backends.node2]
-    max_ws_conns = 2000
-    rpc_url = "http://node-2.node:8545"
-    ws_url = "ws://node-2.node:8546"
+    rpc_url = "{{ .url }}"
+    ws_url = "{{ default .ws "ws://dummy"}}"
+    {{- if .backendGroup_Main }}
+      {{- $groupMain = append $groupMain $name }}
+    {{- end }}
+    {{- if .backendGroup_Multicall }}
+      {{- $groupMulticall = append $groupMulticall $name }}
+    {{- end }}
+    {{- end }}
+    {{- end }}
 
     [backend_groups]
     [backend_groups.main]
-    backends = ["node0", "node1", "node2"]
+    backends = {{toJson $groupMain}}
     routing_strategy = "consensus_aware"
-    # consensus_ha = true
-    # consensus_ha_redis = { url = "redis://redis-master:6379", namespace = "proxyd-l1-consensus-ha" }
+
+    [backend_groups.multicall]
+    backends = {{toJson $groupMulticall}}
+    routing_strategy = "multicall"
 
     [rpc_method_mappings]
     debug_chainConfig = "main"
@@ -93,15 +101,15 @@ data:
     eth_maxPriorityFeePerGas = "main"
     eth_newFilter = "main"
     eth_getFilterChanges = "main"
-    eth_sendRawTransaction = "main"
+    eth_sendRawTransaction = "multicall"
     eth_syncing = "main"
     net_version = "main"
     rollup_getInfo = "main"
     web3_clientVersion = "main"
 
     [batch]
-    error_message = "Over Max batche size (120)"
-    max_size = 120
+    error_message = "Over Max batche size (1000)"
+    max_size = 1000
 
     [rate_limit]
     base_interval = "1m"

@@ -19,12 +19,13 @@ data:
 
     # Beacon Node Endpoints
     endpoints:
-      - name: "node-0"
-        url: "http://node-0.node:9545"
-      - name: "node-1"
-        url: "http://node-1.node:9545"
-      - name: "node-2"
-        url: "http://node-2.node:9545"
+    {{- with .Values.dugtrio.nodes }}
+    {{- range . }}
+    {{- $name := regexReplaceAll "(http|https)://([^/]+).*" .url "${2}" | replace "." "_" | replace ":" "_"  }}
+      - name: "{{$name}}"
+        url: "{{ .url }}"
+    {{- end }}
+    {{- end }}
 
     # Pool configuration
     pool:

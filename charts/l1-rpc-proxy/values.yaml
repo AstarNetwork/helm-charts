@@ -2,13 +2,17 @@
 replicas: 1
 
 dugtrio:
+
+  nodes: []
+    # - url: "https://us-west-1"
+    # - url: "https://us-east-2"
+    # - url: "https://us-west-3"
+    # - url: "https://us-east-4"
+
   image:
     repository: ethpandaops/dugtrio
     tag: 1.0.5-debian
     pullPolicy: IfNotPresent
-
-  nodes: #[]
-    - http://beacon-node:9545
 
   resources:
     limits:
@@ -19,13 +23,22 @@ dugtrio:
       memory: 256Mi
 
 proxyd:
+  nodes: []
+    # - url: "https://us-west-1"
+    #   ws: "wss://us-west-1"
+    #   multicall: true
+    # - url: "https://us-east-2"
+    #   ws: "wss://us-west-2"
+    #   multicall: true
+    # - url: "https://us-west-3"
+    #   ws: "wss://us-west-3"
+    # - url: "https://us-east-4"
+    #   ws: "wss://us-west-4"
+
   image:
     repository: us-docker.pkg.dev/oplabs-tools-artifacts/images/proxyd
     tag: v4.14.5
     pullPolicy: IfNotPresent
-
-  nodes: #[]
-    - http://execution-node:8545
 
   resources:
     limits:
@@ -42,15 +55,9 @@ ingress:
   annotations: {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
-  hosts:
-    - host: chart-example.local
-      paths:
-        - path: /
-          pathType: ImplementationSpecific
-  tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
+  executionRpcDNSName: ""
+  executionWsDNSName: ""
+  beaconRpcDNSName: ""
 
 vmPodScrape:
   # -- If true, a ServiceMonitor CRD is created for a prometheus operator
@@ -98,27 +105,4 @@ securityContext: {}
 
 nodeSelector: {}
 
-tolerations:
-  - key: "local-disk"    #! To allow to run proxy on the same pod with l1 node
-    operator: "Equal"
-    value: "true"
-    effect: "NoSchedule"
-
-topologySpreadConstraints:
-  - maxSkew: 1
-    topologyKey: topology.kubernetes.io/zone
-    whenUnsatisfiable: DoNotSchedule
-    labelSelector:
-      matchLabels:
-        deploymentname: proxy
-
-affinity:
-  podAntiAffinity:
-    requiredDuringSchedulingIgnoredDuringExecution:
-      - labelSelector:
-          matchExpressions:
-            - key: deploymentname
-              operator: In
-              values:
-                - proxy
-        topologyKey: kubernetes.io/hostname
+tolerations: []

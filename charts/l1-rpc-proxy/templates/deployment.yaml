@@ -80,9 +80,6 @@ spec:
           {{- end }}
           image: "{{ .Values.dugtrio.image.repository }}:{{ .Values.dugtrio.image.tag }}"
           imagePullPolicy: {{ .Values.dugtrio.image.pullPolicy | default "IfNotPresent" }}
-          extraVolumes:
-            - configMap: dugtrio-yaml
-              mountPath: /config 
           command:
             - /app/dugtrio-proxy
             - -config
@@ -115,9 +112,6 @@ spec:
         - name: proxyd-toml
           configMap:
             name: proxyd-toml
-            # items:
-            #   - key: nginx.conf
-            #     path: nginx.conf
         - name: dugtrio-yaml
           configMap:
             name: dugtrio-yaml
@@ -126,15 +120,24 @@ spec:
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.affinity }}
       affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app.kubernetes.io/instance
+                    operator: In
+                    values:
+                      - {{ .Release.Name }}
+              topologyKey: kubernetes.io/hostname
       {{- with .Values.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.topologySpreadConstraints }}
       topologySpreadConstraints:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/instance: {{ .Release.Name }}
