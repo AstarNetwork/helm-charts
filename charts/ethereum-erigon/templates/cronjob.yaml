@@ -166,7 +166,7 @@ spec:
                   #* Backup the data
                   ls /snapshot/data
                   cd /snapshot/data
-                  restic backup --no-scan --tag={{.Values.erigon.image.tag}} /snapshot/data/erigon
+                  restic backup --no-scan --tag={{.Values.erigon.image.tag}} erigon
                   restic forget --keep-daily {{.Values.dataSnapshot.backupRetainDays}} --prune
 
                   #* UMount the snapshot
