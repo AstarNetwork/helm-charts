@@ -142,14 +142,26 @@ spec:
                   apt install -y curl jq ca-certificates restic
 
                   restic self-update
-                  if restic check; then
-                    echo "Restic repo exist"
-                  else
-                    echo "Initialising restic repo ..."
-                    restic init
-                  fi
 
-                  restic unlock --remove-all #! We ensure that only one backup is running so can safely remove the locks
+                  restic check
+                  status=$?
+                  case $status in
+                    0)
+                      echo "Repository is exist."
+                      ;;
+                    10)
+                      echo "Repository does not exist. Initializing..."
+                      restic init
+                      ;;
+                    11)
+                      echo "Repository is locked. Attempting to unlock..."
+                      restic unlock --remove-all
+                      ;;
+                    *)
+                      echo "An unknown error occurred (exit code: $status). Exiting."
+                      exit 1
+                      ;;
+                  esac
 
                   #* Backup the data
                   ls /snapshot/data
