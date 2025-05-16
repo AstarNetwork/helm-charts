@@ -80,7 +80,7 @@ spec:
             - /bin/sh
             - -c
             - |
-              set -xu
+              set -exu
 
               if [ -d $APP_HOME/reth ]; then
                 echo "$APP_HOME/reth folder exists, skipping restore"

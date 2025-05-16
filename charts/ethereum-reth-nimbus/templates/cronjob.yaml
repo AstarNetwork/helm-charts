@@ -2,7 +2,7 @@
 kind: CronJob
 apiVersion: batch/v1
 metadata:
-  name: {{ include "node.fullname" . }}
+  name: backup-{{ include "node.fullname" . }}
   labels:
     {{- include "node.labels" . | nindent 4 }}
   annotations:
@@ -53,7 +53,7 @@ spec:
               #     value: "/data"
               command:
                 - /bin/bash
-                - -xuc
+                - -exuc
                 - |
                   apt update
                   apt install -y curl jq ca-certificates

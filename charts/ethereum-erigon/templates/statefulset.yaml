@@ -80,7 +80,7 @@ spec:
             - /bin/sh
             - -c
             - |
-              set -xu
+              set -exu
 
               if [ -d $APP_HOME/erigon ]; then
                 echo "$APP_HOME/erigon folder exists, skipping restore"
@@ -90,7 +90,7 @@ spec:
               restic self-update
 
               #* Restore the data
-              restic restore latest --target $APP_HOME
+              restic restore latest --exclude-xattr security.selinux --target $APP_HOME
 
               chown -R {{ .Values.securityContext.runAsUser }}:{{ .Values.securityContext.runAsGroup }} $APP_HOME
           securityContext:
