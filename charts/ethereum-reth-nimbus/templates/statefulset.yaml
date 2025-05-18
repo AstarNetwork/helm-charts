@@ -192,7 +192,7 @@ spec:
                 annotations:
                   argocd.argoproj.io/compare-options: IgnoreExtraneous
                   argocd.argoproj.io/sync-options: Prune=false
-                  service.beta.kubernetes.io/aws-load-balancer-name: $ARGOCD_INSTANCE_NAME-$HOSTNAME
+                  service.beta.kubernetes.io/aws-load-balancer-name: {{trunc -28 $ARGOCD_INSTANCE_NAME-$HOSTNAME}}-{{randAlphaNum 2 | lower}}
                   service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
                   service.beta.kubernetes.io/aws-load-balancer-type: external
                   service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: ip
