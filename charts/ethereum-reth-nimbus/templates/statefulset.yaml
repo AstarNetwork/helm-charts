@@ -9,6 +9,7 @@ metadata:
     {{- toYaml .Values.annotations | nindent 4 }}
 spec:
   podManagementPolicy: {{ .Values.podManagementPolicy }}
+  revisionHistoryLimit: 3
   replicas: {{ .Values.replicas }}
   selector:
     matchLabels:
@@ -434,9 +435,91 @@ spec:
             {{- toYaml .Values.containerSecurityContext | nindent 12 }}
       {{- end }}
 
+      {{- if .Values.readynessProbe.enabled }}
+        - name: readiness-probe
+          image: python:3.13-bookworm
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+          volumeMounts:
+            - name: readiness-probe-py
+              mountPath: /app
+            - name: storage
+              mountPath: {{$dataPath}}
+          env:
+            - name: VENV_PATH
+              value: /data/readiness
+            - name: APP_DIR
+              value: /app
+            #* Configuring readiness-probe script
+            - name: PROTO
+              value: ethereum
+            - name: MIN_PEERS
+              value: "5"                          #* default
+            - name: BLOCK_MAX_AGE
+              value: "30"                         #* default
+            - name: EXECUTION_RPC_URL
+              value: "http://localhost:8545"      #* default
+            - name: CONSENSUS_RPC_URL
+              value: "http://localhost:9545"      #* default
+            - name: DEBUG_LEVEL
+              value: "2"                          #* default
+          command:
+            # - sleep
+            # - infinity
+            - /bin/bash
+            - -c
+            - |
+              set -exu
+
+              python3 -m venv $VENV_PATH
+
+              echo "Activating virtual environment..."
+              source $VENV_PATH/bin/activate
+
+              pip install --no-cache-dir Flask[async] \
+                                        aiohttp \
+                                        requests \
+                                        gunicorn
+
+              # echo "Starting Gunicorn server..."
+              cd $APP_DIR
+              exec gunicorn \
+                  -w 1 -b "0.0.0.0:8080" \
+                  "readiness_probe:app"           # Format: filename:Flask_instance_name
+
+              # Cleanup
+              deactivate
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          resources:
+            limits:
+              cpu: 1
+              memory: 128Mi
+            requests:
+              cpu: 10m
+              memory: 64Mi
+          livenessProbe:
+            initialDelaySeconds: 60
+            httpGet:
+              path: /health
+              port: 8080
+          readinessProbe:
+            initialDelaySeconds: 60
+            httpGet:
+              path: /ready
+              port: 8080
+      {{- end }}
       volumes:
       {{- if .Values.extraVolumes }}
         {{ toYaml .Values.extraVolumes | nindent 8}}
+      {{- end }}
+      {{- if .Values.readynessProbe.enabled }}
+        - name: readiness-probe-py
+          configMap:
+            name: readiness-probe-py
       {{- end }}
   volumeClaimTemplates:
     - apiVersion: v1

@@ -40,6 +40,9 @@ nimbus:
       # cpu: 500m
       memory: 12Gi
 
+readynessProbe:
+  enabled: true
+
 ethereumExporter:
   enabled: false
   image:
