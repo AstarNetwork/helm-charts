@@ -24,6 +24,9 @@ erigon:
       # cpu: 500m
       memory: 24Gi
 
+readynessProbe:
+  enabled: true
+
 ethereumExporter:
   enabled: false
   image:
