@@ -1,10 +1,10 @@
 # Changelog
 
-## 0.0.59
+## 0.0.60
   Breaking changes - NO.
 
 Changes:
-- Run `restic backup` with the least IO and CPU priority (`ionice -c3 nice -n19 restic backup ...`).
+- Set CPU/RAM limits on backup job pod, to decrease "noisy neighbour" impact.
 
 ## 0.0.58
   Breaking changes - NO.

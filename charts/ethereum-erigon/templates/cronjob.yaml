@@ -166,7 +166,7 @@ spec:
                   #* Backup the data
                   ls /snapshot/data
                   cd /snapshot/data
-                  ionice -c3 nice -n19 restic backup --no-scan --tag={{.Values.erigon.image.tag}} erigon
+                  restic backup --no-scan --tag={{.Values.erigon.image.tag}} erigon
                   restic forget --keep-daily {{.Values.dataSnapshot.backupRetainDays}} --prune
 
                   #* UMount the snapshot
@@ -181,7 +181,10 @@ spec:
               resources:
                 requests:
                   cpu: 1
-                  memory: 8Gi
+                  memory: 2Gi
+                limits:
+                  cpu: 2
+                  memory: 3Gi
               volumeMounts:
               - mountPath: /snapshot
                 name: snapshot-volume
