@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.0.61
+  Breaking changes - NO.
+
+Changes:
+- Update reth to `v1.4.3`.
+- Update nimbus to `v25.5.0`.
+
 ## 0.0.60
   Breaking changes - NO.
 
