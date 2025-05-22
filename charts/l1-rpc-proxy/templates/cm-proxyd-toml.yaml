@@ -48,7 +48,7 @@ data:
     [backends.{{ $name }}]
     max_ws_conns = 2000
     rpc_url = "{{ .url }}"
-    ws_url = "{{ default .ws "ws://dummy"}}"
+    ws_url = "{{ .ws | default "ws://dummy"}}"
     {{- if .backendGroup_Main }}
       {{- $groupMain = append $groupMain $name }}
     {{- end }}
