@@ -164,7 +164,7 @@ spec:
                   #* Backup the data
                   ls /snapshot/data
                   cd /snapshot/data
-                  restic backup --no-scan --tag={{.Values.reth.image.tag}}-{{.Values.nimbus.image.tag}} reth nimbus
+                  ionice -c3 nice -n19 restic backup --no-scan --tag={{.Values.reth.image.tag}}-{{.Values.nimbus.image.tag}} reth nimbus
                   restic forget --keep-daily {{.Values.dataSnapshot.backupRetainDays}} --prune
 
                   #* UMount the snapshot
