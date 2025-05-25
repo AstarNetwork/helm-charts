@@ -290,6 +290,7 @@ spec:
             - --chain={{.Values.ethereumChain}}
             - --datadir=$(APP_HOME)/reth
             - --http
+            - --rpc.max-connections=10000
             - --http.addr=0.0.0.0
             - --http.port=8545
             - --http.api=admin,debug,eth,net,trace,txpool,web3,rpc,reth,ots

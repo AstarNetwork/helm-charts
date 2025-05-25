@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.0.62
+  Breaking changes - NO.
+
+Changes:
+- Set `--rpc.max-connections=10000`, default 500.
+
 ## 0.0.61
   Breaking changes - NO.
 
