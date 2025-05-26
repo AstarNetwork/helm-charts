@@ -290,7 +290,6 @@ spec:
             - --chain={{.Values.ethereumChain}}
             - --datadir=$(APP_HOME)/reth
             - --http
-            - --rpc.max-connections=10000
             - --http.addr=0.0.0.0
             - --http.port=8545
             - --http.api=admin,debug,eth,net,trace,txpool,web3,rpc,reth,ots
@@ -455,16 +454,16 @@ spec:
             #* Configuring readiness-probe script
             - name: PROTO
               value: ethereum
-            - name: MIN_PEERS
-              value: "5"                          #* default
-            - name: BLOCK_MAX_AGE
-              value: "30"                         #* default
-            - name: EXECUTION_RPC_URL
-              value: "http://localhost:8545"      #* default
-            - name: CONSENSUS_RPC_URL
-              value: "http://localhost:9545"      #* default
-            - name: DEBUG_LEVEL
-              value: "2"                          #* default
+            # - name: MIN_PEERS
+            #   value: "5"                          #* default
+            # - name: BLOCK_MAX_AGE
+            #   value: "30"                         #* default
+            # - name: EXECUTION_RPC_URL
+            #   value: "http://localhost:8545"      #* default
+            # - name: CONSENSUS_RPC_URL
+            #   value: "http://localhost:9545"      #* default
+            # - name: DEBUG_LEVEL
+            #   value: "1"                          #* default
           command:
             # - sleep
             # - infinity

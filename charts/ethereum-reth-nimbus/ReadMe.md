@@ -1,11 +1,10 @@
 # Changelog
 
-## 0.0.62
+## 0.0.63
   Breaking changes - NO.
 
 Changes:
-- Set `--rpc.max-connections=10000`, default 500.
-
+- Comment out default rediness-probe container env vars
 ## 0.0.61
   Breaking changes - NO.
 

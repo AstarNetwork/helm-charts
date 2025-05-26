@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.0.63
+  Breaking changes - NO.
+
+Changes:
+- Comment out default rediness-probe container env vars
+
 ## 0.0.60
   Breaking changes - NO.
 
