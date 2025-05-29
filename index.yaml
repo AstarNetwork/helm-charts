@@ -451,6 +451,20 @@ entries:
     version: 0.0.28
   ethereum-reth-nimbus:
   - apiVersion: v2
+    created: "2025-05-29T11:46:49.119137767+08:00"
+    description: 'Ethereum node with reth and  nimbus '
+    digest: 90976418f1e3d2eaef57bda49bb8e9970ccee735c1bc006b215feaf457a3278c
+    home: https://soneium.com
+    maintainers:
+    - name: vlad
+    name: ethereum-reth-nimbus
+    sources:
+    - https://github.com/soneium
+    type: application
+    urls:
+    - https://github.com/AstarNetwork/helm-charts/releases/download/ethereum-reth-nimbus-0.0.63/ethereum-reth-nimbus-0.0.63.tgz
+    version: 0.0.63
+  - apiVersion: v2
     created: "2025-05-25T03:14:21.254358448Z"
     description: 'Ethereum node with reth and nimbus '
     digest: 18565fa9722b6d572d1075267b0235346943ef81d2fa8cef85a690fdddf70ebb
