@@ -3,7 +3,6 @@ replicas: 1
 
 ethereumChain: ""
 
-# -- Node selector for pods
 nodeSelector: {}
   # karpenter.sh/nodepool: lvm-localpv
   # node.kubernetes.io/instance-type: i3.4xlarge
