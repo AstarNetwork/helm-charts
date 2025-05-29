@@ -1,7 +1,7 @@
 apiVersion: v2
 name: ethereum-reth-nimbus
 description: >
-  Ethereum node with reth and nimbus
+  Ethereum node with reth and  nimbus
 home: https://soneium.com
 sources:
   - https://github.com/soneium

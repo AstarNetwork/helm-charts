@@ -411,8 +411,6 @@ spec:
           image: {{.Values.ethereumExporter.image.repository}}:{{.Values.ethereumExporter.image.tag}}
           imagePullPolicy: {{ .Values.pullPolicy }}
           command:
-            # - sleep
-            # - "10000000000000"
             - /bin/sh
             - -c
             - |
