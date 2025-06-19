@@ -66,3 +66,16 @@ S3 bucket name and path to store/get restic repo
 {{- define "node.resticS3Repo" -}}
 {{- printf "s3:https://s3.amazonaws.com/%s/%s/%s" .Values.dataSnapshot.bucketName .Values.ethereumChain .Values.dataSnapshot.ethereumClients }}
 {{- end }}
+
+{{/*
+Returns the final LoadBalancer name:
+- Use .Values.p2pNlb.nameOverride if provided
+- Otherwise, fallback to "$LB_NAME" (set at runtime in the shell script)
+*/}}
+{{- define "node.p2pLbName" -}}
+{{- if .Values.p2pNlb.nameOverride -}}
+{{ .Values.p2pNlb.nameOverride | trunc 32 | trimSuffix "-" }}
+{{- else -}}
+$LB_NAME
+{{- end -}}
+{{- end }}

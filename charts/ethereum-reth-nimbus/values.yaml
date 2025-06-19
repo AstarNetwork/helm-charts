@@ -86,6 +86,7 @@ p2pNlb:
   securityGroup: ""
   #* Subnet name without az name, subnets should be named in the following way: `${publicSubnetPrefix}-${azName}`.
   subnetPrefix: ""
+  nameOverride: ""
 
 ingress:
   # -- Ingress resource for the HTTP API

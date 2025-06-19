@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.0.64
+  Added `nameOverride` over `p2pNlb` to harcode load-balancer name if chosen.
+  Breaking changes - NO.
+
 ## 0.0.63
   Breaking changes - NO.
 
@@ -23,4 +27,3 @@ Changes:
 
 Changes:
 - Add readiness probe sidecar, so STS's pods will wait when each upgraded pod become ready, before upgrading the next one.
-

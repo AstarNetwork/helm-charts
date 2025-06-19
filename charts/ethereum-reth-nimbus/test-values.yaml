@@ -35,6 +35,7 @@ p2pNlb:
   securityGroup: some-security-group-id
   #* Subnet name without az name, subnets should be named in the following way: `${publicSubnetPrefix}-${azName}`.
   subnetPrefix: some-subnet-name
+  nameOverride: some-lb-name
 
 vmPodScrape:
   region: shortregion
