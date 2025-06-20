@@ -63,16 +63,6 @@ spec:
                   curl -Lo $KUBECTL https://dl.k8s.io/release/v1.31.0/bin/linux/amd64/kubectl
                   chmod a+x $KUBECTL
 
-                  # #* Check if the node is synced
-                  # #* LAST_BLOCK_AGE = now - LastBlockTimestamp
-                  # LAST_BLOCK_AGE_SEC=$(($(date +%s)-$(curl -H "Content-Type: application/json" -X POST --data '{"jsonrpc":"2.0","method":"eth_getBlockByNumber","params":["latest", false],"id":67}' localhost:8545|jq -r '.result.timestamp')))
-                  # if [ "$LAST_BLOCK_AGE_SEC" -lt "$MAX_BLOCK_AGE_SEC" ]; then
-                  #   echo "$i: Node is synced. Coping the data to S3"
-                  # else
-                  #   echo "$i: Node is not synced. Exiting."
-                  #   exit 1
-                  # fi
-
                   #* Create the snapshot
                   SNAP_NAME="node-snapshot"
                   SNAP_YAML=$(mktemp)
@@ -88,6 +78,9 @@ spec:
                   EOF
 
                   cat $SNAP_YAML
+                  #* Delete snapshot if it left
+                  kubectl -n {{.Release.Namespace}} delete volumesnapshot --wait=true $SNAP_NAME && sleep 180 || true
+
                   $KUBECTL -n {{.Release.Namespace}} apply -f $SNAP_YAML
 
                   #* Wait for the snapshot to be ready
