@@ -180,8 +180,6 @@ spec:
               {{- end}}
 
               #* Create LB service to expose p2p
-              LB_NAME=$(echo ${ARGOCD_INSTANCE_NAME}-${HOSTNAME} | rev | cut -c1-32 | rev)
-              LB_NAME=${LB_NAME#-}
               SVC_YAML=$(mktemp)
               cat >$SVC_YAML <<EOF
               apiVersion: v1
@@ -195,7 +193,6 @@ spec:
                 annotations:
                   argocd.argoproj.io/compare-options: IgnoreExtraneous
                   argocd.argoproj.io/sync-options: Prune=false
-                  service.beta.kubernetes.io/aws-load-balancer-name: $LB_NAME
                   service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
                   service.beta.kubernetes.io/aws-load-balancer-type: external
                   service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: ip
