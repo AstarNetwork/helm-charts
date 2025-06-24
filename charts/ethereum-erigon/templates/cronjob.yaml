@@ -48,12 +48,14 @@ spec:
               securityContext:
                 runAsUser: 0
                 privileged: true
-              # env:
-              #   - name: APP_HOME
-              #     value: "/data"
+              env:
+                - name: ARGOCD_INSTANCE_NAME
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.labels['app.kubernetes.io/instance']
               command:
                 - /bin/bash
-                - -exuc
+                - -xuc
                 - |
                   apt update
                   apt install -y curl jq ca-certificates
@@ -71,6 +73,10 @@ spec:
                   kind: VolumeSnapshot
                   metadata:
                     name: $SNAP_NAME
+                    labels:
+                      argocd.argoproj.io/instance: $ARGOCD_INSTANCE_NAME
+                      app.kubernetes.io/instance: $ARGOCD_INSTANCE_NAME
+                      app.kubernetes.io/part-of: argocd
                   spec:
                     volumeSnapshotClassName: lvm-localpv
                     source:
