@@ -48,17 +48,12 @@ spec:
               securityContext:
                 runAsUser: 0
                 privileged: true
-              env:
-                - name: ARGOCD_INSTANCE_NAME
-                  valueFrom:
-                    fieldRef:
-                      fieldPath: metadata.labels['app.kubernetes.io/instance']
               command:
                 - /bin/bash
                 - -xuc
                 - |
                   apt update
-                  apt install -y curl jq ca-certificates
+                  apt install -y curl ca-certificates
 
                   #* Remove the service to remove LB
                   KUBECTL="/tmp/kubectl"
@@ -91,10 +86,6 @@ spec:
                   kind: VolumeSnapshot
                   metadata:
                     name: $SNAP_NAME
-                    labels:
-                      argocd.argoproj.io/instance: $ARGOCD_INSTANCE_NAME
-                      app.kubernetes.io/instance: $ARGOCD_INSTANCE_NAME
-                      app.kubernetes.io/part-of: argocd
                   spec:
                     volumeSnapshotClassName: lvm-localpv
                     source:
@@ -105,7 +96,7 @@ spec:
 
                   #* Wait for the snapshot to be ready
                   for i in $(seq 1 12); do
-                    SNAP_STATUS=$($KUBECTL -n {{.Release.Namespace}} get volumesnapshot $SNAP_NAME -ojson | jq -r '.status.readyToUse')
+                    SNAP_STATUS=$($KUBECTL -n {{.Release.Namespace}} get volumesnapshot $SNAP_NAME -o jsonpath="{.status.readyToUse}")
                     if [ "$SNAP_STATUS" = "true" ]; then
                       echo "Snapshot is ready"
                       break
@@ -116,7 +107,7 @@ spec:
                   done
 
                   #* VolumeSnapshot is also LVM volume snapshot name
-                  SNAP_UID=$($KUBECTL -n {{.Release.Namespace}} get volumesnapshot $SNAP_NAME -ojson | jq -r '.metadata.uid')
+                  SNAP_UID=$($KUBECTL -n {{.Release.Namespace}} get volumesnapshot $SNAP_NAME -o jsonpath="{.metadata.uid}")
 
                   #* Mount the snapshot
                   nsenter -m/proc/1/ns/mnt -- mkdir -p /mnt/snapshot/data
@@ -151,7 +142,7 @@ spec:
                 - -xuc
                 - |
                   apt update
-                  apt install -y curl jq ca-certificates restic
+                  apt install -y curl ca-certificates restic
 
                   restic self-update
 
