@@ -67,6 +67,24 @@ spec:
 
                   #* Create the snapshot
                   SNAP_NAME="node-snapshot"
+
+                  #* Cleaning if snapshot left from previouse failed job
+                  if $KUBECTL -n {{.Release.Namespace}} get volumesnapshot $SNAP_NAME >/dev/null 2>&1; then
+                    echo "There is snapshot $SNAP_NAME from previouse run, cleaning..."
+                    LV_NAME=$($KUBECTL -n {{.Release.Namespace}} get pvc {{.Values.dataSnapshot.sourcePvcName}} --template={{.spec.volumeName}})
+                    nsenter -m/proc/1/ns/mnt -- umount /mnt/snapshot/data
+                    $KUBECTL -n {{.Release.Namespace}} delete volumesnapshot --wait=true $SNAP_NAME
+                    for i in $(seq 1 12); do
+                      if [ "$(nsenter -m/proc/1/ns/mnt -- lvs --noheadings | grep $LV_NAME | wc -l)" -eq 1 ]; then
+                        break
+                      else
+                        sleep 5
+                      fi
+                    done
+                  fi
+                  nsenter -m/proc/1/ns/mnt -- lvs
+
+                  #* Create snapshot
                   SNAP_YAML=$(mktemp)
                   cat >$SNAP_YAML <<EOF
                   apiVersion: snapshot.storage.k8s.io/v1
@@ -82,22 +100,6 @@ spec:
                     source:
                       persistentVolumeClaimName: {{.Values.dataSnapshot.sourcePvcName}}
                   EOF
-
-                  #* Cleaning if snapshot left from previouse failed job
-                  if $KUBECTL -n {{.Release.Namespace}} get volumesnapshot $SNAP_NAME >/dev/null 2>&1; then
-                    echo "There is snapshot $SNAP_NAME from previouse run, cleaning..."
-                    nsenter -m/proc/1/ns/mnt -- umount /mnt/snapshot/data
-                    $KUBECTL -n {{.Release.Namespace}} delete volumesnapshot --wait=true $SNAP_NAME
-                    for i in $(seq 1 12); do
-                      if [ "$(nsenter -m/proc/1/ns/mnt -- lvs | wc -l)" -eq 1 ]; then
-                        break
-                      else
-                        sleep 5
-                      fi
-                    done
-                  fi
-
-                  #* Create snapshot
                   cat $SNAP_YAML
                   $KUBECTL -n {{.Release.Namespace}} apply -f $SNAP_YAML
 
