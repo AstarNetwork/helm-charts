@@ -83,7 +83,7 @@ spec:
                       persistentVolumeClaimName: {{.Values.dataSnapshot.sourcePvcName}}
                   EOF
 
-                  #* Cleaning if snapshot left from previouse braken job
+                  #* Cleaning if snapshot left from previouse failed job
                   if $KUBECTL -n {{.Release.Namespace}} get volumesnapshot $SNAP_NAME >/dev/null 2>&1; then
                     echo "There is snapshot $SNAP_NAME from previouse run, cleaning..."
                     nsenter -m/proc/1/ns/mnt -- umount /mnt/snapshot/data
