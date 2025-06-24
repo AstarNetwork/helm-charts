@@ -50,28 +50,36 @@ spec:
                 privileged: true
               command:
                 - /bin/bash
-                - -exuc
+                - -xuc
                 - |
                   apt update
-                  apt install -y curl jq ca-certificates
+                  apt install -y curl ca-certificates
 
                   #* Remove the service to remove LB
                   KUBECTL="/tmp/kubectl"
                   curl -Lo $KUBECTL https://dl.k8s.io/release/v1.31.0/bin/linux/amd64/kubectl
                   chmod a+x $KUBECTL
 
-                  # #* Check if the node is synced
-                  # #* LAST_BLOCK_AGE = now - LastBlockTimestamp
-                  # LAST_BLOCK_AGE_SEC=$(($(date +%s)-$(curl -H "Content-Type: application/json" -X POST --data '{"jsonrpc":"2.0","method":"eth_getBlockByNumber","params":["latest", false],"id":67}' localhost:8545|jq -r '.result.timestamp')))
-                  # if [ "$LAST_BLOCK_AGE_SEC" -lt "$MAX_BLOCK_AGE_SEC" ]; then
-                  #   echo "$i: Node is synced. Coping the data to S3"
-                  # else
-                  #   echo "$i: Node is not synced. Exiting."
-                  #   exit 1
-                  # fi
-
                   #* Create the snapshot
                   SNAP_NAME="node-snapshot"
+
+                  #* Cleaning if snapshot left from previouse failed job
+                  if $KUBECTL -n {{.Release.Namespace}} get volumesnapshot $SNAP_NAME >/dev/null 2>&1; then
+                    echo "There is snapshot $SNAP_NAME from previouse run, cleaning..."
+                    LV_NAME=$($KUBECTL -n {{.Release.Namespace}} get pvc {{.Values.dataSnapshot.sourcePvcName}} -o jsonpath="{.spec.volumeName}")
+                    nsenter -m/proc/1/ns/mnt -- umount /mnt/snapshot/data
+                    $KUBECTL -n {{.Release.Namespace}} delete volumesnapshot --wait=true $SNAP_NAME
+                    for i in $(seq 1 12); do
+                      if [ "$(nsenter -m/proc/1/ns/mnt -- lvs --noheadings | grep $LV_NAME | wc -l)" -eq 1 ]; then
+                        break
+                      else
+                        sleep 5
+                      fi
+                    done
+                  fi
+                  nsenter -m/proc/1/ns/mnt -- lvs
+
+                  #* Create snapshot
                   SNAP_YAML=$(mktemp)
                   cat >$SNAP_YAML <<EOF
                   apiVersion: snapshot.storage.k8s.io/v1
@@ -83,13 +91,12 @@ spec:
                     source:
                       persistentVolumeClaimName: {{.Values.dataSnapshot.sourcePvcName}}
                   EOF
-
                   cat $SNAP_YAML
                   $KUBECTL -n {{.Release.Namespace}} apply -f $SNAP_YAML
 
                   #* Wait for the snapshot to be ready
                   for i in $(seq 1 12); do
-                    SNAP_STATUS=$($KUBECTL -n {{.Release.Namespace}} get volumesnapshot $SNAP_NAME -ojson | jq -r '.status.readyToUse')
+                    SNAP_STATUS=$($KUBECTL -n {{.Release.Namespace}} get volumesnapshot $SNAP_NAME -o jsonpath="{.status.readyToUse}")
                     if [ "$SNAP_STATUS" = "true" ]; then
                       echo "Snapshot is ready"
                       break
@@ -100,11 +107,10 @@ spec:
                   done
 
                   #* VolumeSnapshot is also LVM volume snapshot name
-                  SNAP_UID=$($KUBECTL -n {{.Release.Namespace}} get volumesnapshot $SNAP_NAME -ojson | jq -r '.metadata.uid')
+                  SNAP_UID=$($KUBECTL -n {{.Release.Namespace}} get volumesnapshot $SNAP_NAME -o jsonpath="{.metadata.uid}")
 
                   #* Mount the snapshot
                   nsenter -m/proc/1/ns/mnt -- mkdir -p /mnt/snapshot/data
-                  # nsenter -m/proc/1/ns/mnt -- umount /mnt/snapshot/data || true
                   nsenter -m/proc/1/ns/mnt -- mount -o ro /dev/lvm-localpv/$SNAP_UID /mnt/snapshot/data
 
                   #* Show lvs
@@ -117,6 +123,8 @@ spec:
                 runAsUser: 0
                 privileged: true
               env:
+                # - name: APP_HOME
+                #   value: "/data"
                 - name: AWS_DEFAULT_REGION
                   value: "{{.Values.dataSnapshot.bucketRegion}}"
                 - name: RESTIC_PASSWORD
@@ -134,7 +142,7 @@ spec:
                 - -xuc
                 - |
                   apt update
-                  apt install -y curl jq ca-certificates restic
+                  apt install -y curl ca-certificates restic
 
                   restic self-update
 
@@ -161,7 +169,7 @@ spec:
                   #* Backup the data
                   ls /snapshot/data
                   cd /snapshot/data
-                  restic backup --no-scan --tag={{.Values.reth.image.tag}}-{{.Values.nimbus.image.tag}} reth nimbus
+                  restic backup --no-scan --tag={{.Values.erigon.image.tag}} erigon
                   restic forget --keep-daily {{.Values.dataSnapshot.backupRetainDays}} --prune
 
                   #* UMount the snapshot
