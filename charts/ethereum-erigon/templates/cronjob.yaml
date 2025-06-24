@@ -71,7 +71,7 @@ spec:
                   #* Cleaning if snapshot left from previouse failed job
                   if $KUBECTL -n {{.Release.Namespace}} get volumesnapshot $SNAP_NAME >/dev/null 2>&1; then
                     echo "There is snapshot $SNAP_NAME from previouse run, cleaning..."
-                    LV_NAME=$($KUBECTL -n {{.Release.Namespace}} get pvc {{.Values.dataSnapshot.sourcePvcName}} --template={{.spec.volumeName}})
+                    LV_NAME=$($KUBECTL -n {{.Release.Namespace}} get pvc {{.Values.dataSnapshot.sourcePvcName}} -o jsonpath="{.spec.volumeName}")
                     nsenter -m/proc/1/ns/mnt -- umount /mnt/snapshot/data
                     $KUBECTL -n {{.Release.Namespace}} delete volumesnapshot --wait=true $SNAP_NAME
                     for i in $(seq 1 12); do
