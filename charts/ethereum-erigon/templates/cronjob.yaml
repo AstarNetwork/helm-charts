@@ -77,10 +77,22 @@ spec:
                       persistentVolumeClaimName: {{.Values.dataSnapshot.sourcePvcName}}
                   EOF
 
-                  cat $SNAP_YAML
-                  #* Delete snapshot if it left
-                  kubectl -n {{.Release.Namespace}} delete volumesnapshot --wait=true $SNAP_NAME && sleep 180 || true
+                  #* Cleaning if snapshot left from previouse braken job
+                  if $KUBECTL -n {{.Release.Namespace}} get volumesnapshot $SNAP_NAME >/dev/null 2>&1; then
+                    echo "There is snapshot $SNAP_NAME from previouse run, cleaning..."
+                    nsenter -m/proc/1/ns/mnt -- umount /mnt/snapshot/data
+                    $KUBECTL -n {{.Release.Namespace}} delete volumesnapshot --wait=true $SNAP_NAME
+                    for i in $(seq 1 12); do
+                      if [ "$(nsenter -m/proc/1/ns/mnt -- lvs | wc -l)" -eq 1 ]; then
+                        break
+                      else
+                        sleep 5
+                      fi
+                    done
+                  fi
 
+                  #* Create snapshot
+                  cat $SNAP_YAML
                   $KUBECTL -n {{.Release.Namespace}} apply -f $SNAP_YAML
 
                   #* Wait for the snapshot to be ready
@@ -100,7 +112,6 @@ spec:
 
                   #* Mount the snapshot
                   nsenter -m/proc/1/ns/mnt -- mkdir -p /mnt/snapshot/data
-                  # nsenter -m/proc/1/ns/mnt -- umount /mnt/snapshot/data || true
                   nsenter -m/proc/1/ns/mnt -- mount -o ro /dev/lvm-localpv/$SNAP_UID /mnt/snapshot/data
 
                   #* Show lvs
