@@ -41,10 +41,11 @@ spec:
             - name: danted-config
               mountPath: /etc/danted
               readOnly: true
-          args:
+          command:
             - /usr/sbin/danted
             - -f
             - /etc/danted/danted.conf
+            - -p=/tmp/danted.pid
 
           {{- with .Values.livenessProbe }}
           livenessProbe:
