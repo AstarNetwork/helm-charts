@@ -1432,6 +1432,16 @@ entries:
   socks-proxy:
   - apiVersion: v2
     appVersion: 1.16.0
+    created: "2025-08-21T02:55:00.750453956Z"
+    description: A Helm chart to deploy danted
+    digest: dda6265c665800242e388e84f7ddd559325717da4b826adca3bc23fc564ed5ad
+    name: socks-proxy
+    type: application
+    urls:
+    - https://github.com/AstarNetwork/helm-charts/releases/download/socks-proxy-0.2.0/socks-proxy-0.2.0.tgz
+    version: 0.2.0
+  - apiVersion: v2
+    appVersion: 1.16.0
     created: "2025-08-19T23:48:35.16797485Z"
     description: A Helm chart to deploy danted
     digest: 0424b942fe28df8aede96e506e01360a0246164d647098612a5927cfadc2c50f
@@ -1529,4 +1539,4 @@ entries:
     urls:
     - https://github.com/AstarNetwork/helm-charts/releases/download/universal-helm-0.6.11/universal-helm-0.6.11.tgz
     version: 0.6.11
-generated: "2025-08-19T23:48:35.168202586Z"
+generated: "2025-08-21T02:55:00.750741411Z"
